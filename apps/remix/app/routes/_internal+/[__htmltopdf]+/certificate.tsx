@@ -7,6 +7,7 @@ import { getDocumentCertificateAuditLogs } from '@documenso/lib/server-only/docu
 import { getOrganisationClaimByTeamId } from '@documenso/lib/server-only/organisation/get-organisation-claims';
 import { DOCUMENT_AUDIT_LOG_TYPE } from '@documenso/lib/types/document-audit-logs';
 import { extractDocumentAuthMethods } from '@documenso/lib/utils/document-auth';
+import { getDefaultRecipientAuthKind } from '@documenso/lib/utils/emailless-signing';
 import { mapSecondaryIdToDocumentId } from '@documenso/lib/utils/envelope';
 import { getTranslations } from '@documenso/lib/utils/i18n';
 import { Card, CardContent } from '@documenso/ui/primitives/card';
@@ -147,12 +148,15 @@ export default function SigningCertificate({ loaderData }: Route.ComponentProps)
 
     const actionAuthMethod = insertedAuditLogsWithFieldAuth.at(0)?.data?.fieldSecurity?.type;
 
+    const defaultAuthLevel =
+      getDefaultRecipientAuthKind(recipient) === 'LINK' ? _(msg`Signing link`) : _(msg`Email`);
+
     let authLevel = match(actionAuthMethod)
       .with('ACCOUNT', () => _(msg`Account Re-Authentication`))
       .with('TWO_FACTOR_AUTH', () => _(msg`Two-Factor Re-Authentication`))
       .with('PASSWORD', () => _(msg`Password Re-Authentication`))
       .with('PASSKEY', () => _(msg`Passkey Re-Authentication`))
-      .with('EXPLICIT_NONE', () => _(msg`Email`))
+      .with('EXPLICIT_NONE', () => defaultAuthLevel)
       .with(undefined, () => null)
       .exhaustive();
 
@@ -162,7 +166,7 @@ export default function SigningCertificate({ loaderData }: Route.ComponentProps)
       authLevel = match(accessAuthMethod)
         .with('ACCOUNT', () => _(msg`Account Authentication`))
         .with('TWO_FACTOR_AUTH', () => _(msg`Two-Factor Authentication`))
-        .with(undefined, () => _(msg`Email`))
+        .with(undefined, () => defaultAuthLevel)
         .exhaustive();
     }
 

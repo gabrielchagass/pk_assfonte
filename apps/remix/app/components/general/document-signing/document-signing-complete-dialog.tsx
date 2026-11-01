@@ -55,6 +55,8 @@ export type DocumentSigningCompleteDialogProps = {
     name: string;
     email: string;
   };
+  /** Lets a recipient without an email complete without being asked for one. */
+  allowMissingRecipientEmail?: boolean;
   buttonSize?: 'sm' | 'lg';
   position?: 'start' | 'end' | 'center';
   disableNameInput?: boolean;
@@ -90,6 +92,7 @@ export const DocumentSigningCompleteDialog = ({
   disabled = false,
   allowDictateNextSigner = false,
   recipientPayload,
+  allowMissingRecipientEmail = false,
   defaultNextSigner,
   buttonSize = 'lg',
   position,
@@ -111,6 +114,8 @@ export const DocumentSigningCompleteDialog = ({
   const { isNameLocked, isEmailLocked } = useEmbedSigningContext() || {};
 
   const canDictateNextSigner = allowDictateNextSigner && Boolean(defaultNextSigner);
+
+  const requiresRecipientDetails = Boolean(recipientPayload && !recipientPayload.email && !allowMissingRecipientEmail);
 
   const form = useForm<TNextSignerFormSchema>({
     resolver: canDictateNextSigner ? zodResolver(ZNextSignerFormSchema) : undefined,
@@ -155,7 +160,7 @@ export const DocumentSigningCompleteDialog = ({
     try {
       let recipientOverridePayload: { name: string; email: string } | undefined;
 
-      if (recipientPayload && !recipientPayload.email) {
+      if (requiresRecipientDetails) {
         const isFormValid = await recipientForm.trigger();
 
         if (!isFormValid) {
@@ -290,7 +295,7 @@ export const DocumentSigningCompleteDialog = ({
           ))
           .otherwise(() => (
             <fieldset disabled={form.formState.isSubmitting} className="border-none p-0">
-              {recipientPayload && !recipientPayload.email && (
+              {requiresRecipientDetails && (
                 <Form {...recipientForm}>
                   <div className="mb-4 flex flex-col gap-4">
                     <div className="flex flex-col gap-4 md:flex-row">

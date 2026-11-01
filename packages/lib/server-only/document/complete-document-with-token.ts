@@ -24,6 +24,7 @@ import { DocumentAuth } from '../../types/document-auth';
 import { isTspEnvelope } from '../../types/signature-level';
 import { mapEnvelopeToWebhookDocumentPayload, ZWebhookDocumentSchema } from '../../types/webhook-payload';
 import { extractDocumentAuthMethods } from '../../utils/document-auth';
+import { IS_EMAILLESS_SIGNING_ENABLED } from '../../utils/emailless-signing';
 import type { EnvelopeIdOptions } from '../../utils/envelope';
 import { mapSecondaryIdToDocumentId, unsafeBuildEnvelopeIdQuery } from '../../utils/envelope';
 import { getRecipientsInActiveSigningStep, isRecipientTurnBySigningOrder } from '../../utils/recipient-groups';
@@ -244,7 +245,7 @@ export const completeDocumentWithToken = async ({
       .toLowerCase();
   }
 
-  if (!recipientEmail) {
+  if (!recipientEmail && !IS_EMAILLESS_SIGNING_ENABLED()) {
     throw new AppError(AppErrorCode.INVALID_BODY, {
       message: 'Recipient email is required',
     });

@@ -9,6 +9,7 @@ import { match } from 'ts-pattern';
 import { ZSupportedLanguageCodeSchema } from '../../constants/i18n';
 import type { TDocumentAuditLogBaseSchema } from '../../types/document-audit-logs';
 import { extractDocumentAuthMethods } from '../../utils/document-auth';
+import { getDefaultRecipientAuthKind } from '../../utils/emailless-signing';
 import { getTranslations } from '../../utils/i18n';
 import { getDocumentCertificateAuditLogs } from '../document/get-document-certificate-audit-logs';
 import { getOrganisationClaimByTeamId } from '../organisation/get-organisation-claims';
@@ -98,12 +99,15 @@ export const generateCertificatePdf = async (options: GenerateCertificatePdfOpti
 
       const actionAuthMethod = insertedAuditLogsWithFieldAuth.at(0)?.data?.fieldSecurity?.type;
 
+      const defaultAuthLevel =
+        getDefaultRecipientAuthKind(recipient) === 'LINK' ? i18n._(msg`Signing link`) : i18n._(msg`Email`);
+
       let authLevel = match(actionAuthMethod)
         .with('ACCOUNT', () => i18n._(msg`Account Re-Authentication`))
         .with('TWO_FACTOR_AUTH', () => i18n._(msg`Two-Factor Re-Authentication`))
         .with('PASSWORD', () => i18n._(msg`Password Re-Authentication`))
         .with('PASSKEY', () => i18n._(msg`Passkey Re-Authentication`))
-        .with('EXPLICIT_NONE', () => i18n._(msg`Email`))
+        .with('EXPLICIT_NONE', () => defaultAuthLevel)
         .with(undefined, () => null)
         .exhaustive();
 
@@ -113,7 +117,7 @@ export const generateCertificatePdf = async (options: GenerateCertificatePdfOpti
         authLevel = match(accessAuthMethod)
           .with('ACCOUNT', () => i18n._(msg`Account Authentication`))
           .with('TWO_FACTOR_AUTH', () => i18n._(msg`Two-Factor Authentication`))
-          .with(undefined, () => i18n._(msg`Email`))
+          .with(undefined, () => defaultAuthLevel)
           .exhaustive();
       }
 

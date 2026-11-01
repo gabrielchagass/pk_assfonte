@@ -8,6 +8,7 @@ import { isBase64Image } from '@documenso/lib/constants/signatures';
 import { AppError, AppErrorCode } from '@documenso/lib/errors/app-error';
 import type { TRecipientAccessAuth } from '@documenso/lib/types/document-auth';
 import { isTspEnvelope } from '@documenso/lib/types/signature-level';
+import { IS_EMAILLESS_SIGNING_ENABLED } from '@documenso/lib/utils/emailless-signing';
 import { mapSecondaryIdToDocumentId } from '@documenso/lib/utils/envelope';
 import { trpc } from '@documenso/trpc/react';
 import { useToast } from '@documenso/ui/primitives/use-toast';
@@ -377,6 +378,7 @@ export const EnvelopeSignerCompleteDialog = () => {
       isSubmitting={isSubmitting}
       onOpenChange={onDialogOpenChange}
       recipientPayload={recipientPayload}
+      allowMissingRecipientEmail={!isDirectTemplate && IS_EMAILLESS_SIGNING_ENABLED()}
       onSignatureComplete={isDirectTemplate ? handleDirectTemplateCompleteClick : handleOnCompleteClick}
       documentTitle={envelope.title}
       fields={recipientFieldsRemaining}
