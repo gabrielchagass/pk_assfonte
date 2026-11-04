@@ -3,8 +3,8 @@ import { i18n } from '@lingui/core';
 import type { MacroMessageDescriptor } from '@lingui/core/macro';
 
 import type { I18nLocaleData, SupportedLanguageCodes } from '../constants/i18n';
-import { APP_I18N_OPTIONS } from '../constants/i18n';
 import { env } from './env';
+import { getFallbackLanguage, matchSupportedLanguage } from './locale-match';
 
 export async function getTranslations(locale: string) {
   const extension = env('NODE_ENV') === 'development' ? 'po' : 'mjs';
@@ -20,19 +20,7 @@ export async function dynamicActivate(locale: string) {
   i18n.loadAndActivate({ locale, messages });
 }
 
-const parseLanguageFromLocale = (locale: string): SupportedLanguageCodes | null => {
-  const [language, _country] = locale.split('-');
-
-  const foundSupportedLanguage = APP_I18N_OPTIONS.supportedLangs.find(
-    (lang): lang is SupportedLanguageCodes => lang === language,
-  );
-
-  if (!foundSupportedLanguage) {
-    return null;
-  }
-
-  return foundSupportedLanguage;
-};
+const parseLanguageFromLocale = (locale: string): SupportedLanguageCodes | null => matchSupportedLanguage(locale);
 
 /**
  * Extracts the language from the `accept-language` header.
@@ -77,7 +65,7 @@ export const extractLocaleData = ({ headers }: ExtractLocaleDataOptions): I18nLo
   });
 
   return {
-    lang: languages[0] || APP_I18N_OPTIONS.sourceLang,
+    lang: languages[0] || getFallbackLanguage(),
     locales: headerLocales,
   };
 };
