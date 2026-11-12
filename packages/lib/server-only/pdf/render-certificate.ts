@@ -4,7 +4,7 @@ import '../konva/skia-backend';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Canvas } from '@documenso/skia-canvas';
-import { Image as SkiaImage } from '@documenso/skia-canvas';
+import { Image as SkiaImage, Canvas as SkiaCanvas } from '@documenso/skia-canvas';
 import type { I18n } from '@lingui/core';
 import { msg } from '@lingui/core/macro';
 import type { Field, RecipientRole, Signature } from '@prisma/client';
@@ -937,10 +937,76 @@ const traceHexagon = (c: CanvasRenderingContext2D, cx: number, cy: number, radiu
   c.closePath();
 };
 
+type MicrotextTiles = {
+  // One image per colour along the brand gradient, each holding exactly one
+  // repetition of the microtext, so tiles placed side by side read as a line.
+  images: HTMLImageElement[];
+  width: number;
+  height: number;
+  baseline: number;
+};
+
+const microtextFontSize = 1.35;
+const microtextTileColors = 8;
+// Pixels per millimetre of the raster tiles (about 600 dpi).
+const microtextResolution = 24;
+
+const hexToRgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+
+const brandGradientColor = (t: number) => {
+  for (let i = 0; i + 2 < brandGradientStops.length; i += 2) {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const [t0, c0, t1, c1] = brandGradientStops.slice(i, i + 4) as [number, string, number, string];
+
+    if (t <= t1 || i + 4 >= brandGradientStops.length) {
+      const f = Math.min(1, Math.max(0, (t - t0) / (t1 - t0)));
+      const a = hexToRgb(c0);
+      const b = hexToRgb(c1);
+
+      return `rgb(${a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(', ')})`;
+    }
+  }
+
+  return brandBlue;
+};
+
+// The microtext is drawn as raster tiles and not as text or outlines: text
+// would show up when the PDF is copied, searched or read aloud, and tens of
+// thousands of glyph outlines made the certificate page ~10 MB. Each tile
+// image is embedded once per page and reused by every line.
+const createMicrotextTiles = async (microtext: string): Promise<MicrotextTiles> => {
+  const scale = microtextResolution;
+  const font = `500 ${microtextFontSize * scale}px Inter`;
+  const text = `${microtext} · `;
+
+  const probe = new SkiaCanvas(1, 1).getContext('2d');
+  probe.font = font;
+
+  const pixelWidth = Math.ceil(probe.measureText(text).width);
+  const pixelHeight = Math.ceil(2 * scale);
+  const baseline = 1.5;
+
+  const images: HTMLImageElement[] = [];
+
+  for (let i = 0; i < microtextTileColors; i++) {
+    const tile = new SkiaCanvas(pixelWidth, pixelHeight);
+    const ctx = tile.getContext('2d');
+
+    ctx.font = font;
+    ctx.fillStyle = brandGradientColor(i / (microtextTileColors - 1));
+    ctx.fillText(text, 0, baseline * scale);
+
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    images.push(new SkiaImage(await tile.toBuffer('png')) as unknown as HTMLImageElement);
+  }
+
+  return { images, width: pixelWidth / scale, height: pixelHeight / scale, baseline };
+};
+
 type RenderSecurityBackgroundOptions = {
   pageWidth: number;
   pageHeight: number;
-  microtext: string;
+  microtext: MicrotextTiles;
 };
 
 // Drawn in millimetres (the page width is 210 mm on A4) and scaled to points.
@@ -964,25 +1030,19 @@ const renderSecurityBackground = ({ pageWidth, pageHeight, microtext }: RenderSe
         gradient.addColorStop(brandGradientStops[i] as number, brandGradientStops[i + 1] as string);
       }
 
-      // Background: microtext lines, shifted on each line.
-      c.fillStyle = gradient;
+      // Background: microtext lines, shifted on each line. The tile colour
+      // follows the diagonal brand gradient at the middle of each tile.
       c.globalAlpha = 0.09;
-      c.font = '500 1.35px Inter';
 
-      const line = `${microtext} · `.repeat(Math.ceil((width * 2) / (microtext.length + 3)));
-
-      // Outlines, not text: the microtext must not show up when the PDF text
-      // is copied, searched or read aloud.
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const skia = c as unknown as { outlineText?: (text: string) => Path2D };
-      const outline = typeof skia.outlineText === 'function' ? skia.outlineText(line) : null;
+      const { images, width: tileWidth, height: tileHeight, baseline } = microtext;
+      const diagonal = width * width + height * height;
 
       for (let y = 2, k = 0; y < height + 2; y += 2.4, k++) {
-        if (outline) {
-          c.save();
-          c.translate(-((k * 7) % 40), y);
-          c.fill(outline);
-          c.restore();
+        for (let x = -((k * 7) % tileWidth); x < width; x += tileWidth) {
+          const t = ((x + tileWidth / 2) * width + y * height) / diagonal;
+          const index = Math.round(Math.min(1, Math.max(0, t)) * (images.length - 1));
+
+          c.drawImage(images[index], x, y - baseline, tileWidth, tileHeight);
         }
       }
 
@@ -1241,7 +1301,7 @@ const renderProKeyCertificate = async ({
   });
 
   const tables = renderTables({ groupedRows, columnWidths, i18n, filled: true });
-  const microtext = i18n._(msg`PROKEY · VERIFIABLE SIGNATURE`);
+  const microtext = await createMicrotextTiles(i18n._(msg`PROKEY · VERIFIABLE SIGNATURE`));
 
   let stage: Konva.Stage | null = new Konva.Stage({ width: pageWidth, height: pageHeight });
   const pages: Uint8Array[] = [];
