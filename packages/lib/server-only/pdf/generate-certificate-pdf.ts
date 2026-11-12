@@ -12,7 +12,14 @@ import type { TDocumentAuditLogBaseSchema } from '../../types/document-audit-log
 import { extractDocumentAuthMethods } from '../../utils/document-auth';
 import { getDefaultRecipientAuthKind } from '../../utils/emailless-signing';
 import { getTranslations } from '../../utils/i18n';
-import { countSignatures, getVerificationUrl, IS_SIGNING_VERIFICATION_ENABLED } from '../../utils/signing-verification';
+import {
+  countSignatures,
+  getCertificateLegalBasis,
+  getCertificateTimeZone,
+  getTimestampAuthorityLabel,
+  getVerificationUrl,
+  IS_SIGNING_VERIFICATION_ENABLED,
+} from '../../utils/signing-verification';
 import { getDocumentCertificateAuditLogs } from '../document/get-document-certificate-audit-logs';
 import { getOrganisationClaimByTeamId } from '../organisation/get-organisation-claims';
 import { renderCertificate } from './render-certificate';
@@ -155,6 +162,9 @@ export const generateCertificatePdf = async (options: GenerateCertificatePdfOpti
             url: getVerificationUrl(NEXT_PUBLIC_WEBAPP_URL(), envelope.qrToken),
             ...countSignatures(recipients),
             originalSha256: originalSha256 ?? null,
+            timeZone: getCertificateTimeZone(),
+            timestampAuthority: getTimestampAuthorityLabel(),
+            legalBasis: getCertificateLegalBasis(),
           }
         : null,
     hidePoweredBy: organisationClaim.flags.hidePoweredBy ?? false,

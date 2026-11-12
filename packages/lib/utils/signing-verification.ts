@@ -1,3 +1,5 @@
+import { DateTime } from 'luxon';
+
 import { env } from './env';
 
 /**
@@ -54,3 +56,62 @@ export const sha256Hex = async (data: Uint8Array | ArrayBuffer) => {
  * Splits a 64-char hash into lines so it wraps predictably in the PDF.
  */
 export const chunkHash = (hash: string, size = 32) => hash.match(new RegExp(`.{1,${size}}`, 'g')) ?? [hash];
+
+/**
+ * Time zone used for the dates in the certificate (ProKey layout). Defaults to
+ * Brasília; `NEXT_PRIVATE_CERTIFICATE_TIMEZONE` takes any IANA zone.
+ */
+export const getCertificateTimeZone = () => env('NEXT_PRIVATE_CERTIFICATE_TIMEZONE') || 'America/Sao_Paulo';
+
+const TIME_ZONE_NAMES: Record<string, string> = {
+  'America/Sao_Paulo': 'Brasília',
+};
+
+/**
+ * "GMT -03:00 (Brasília)": the offset at `at` plus a readable zone name.
+ */
+export const describeTimeZone = (timeZone: string, at: Date) => {
+  const offset = DateTime.fromJSDate(at).setZone(timeZone).toFormat('ZZ');
+  const name = TIME_ZONE_NAMES[timeZone] ?? timeZone.split('/').pop()?.replace(/_/g, ' ') ?? timeZone;
+
+  return `GMT ${offset} (${name})`;
+};
+
+/**
+ * Legal basis sentence printed in the verification block. Empty by default:
+ * the text is set only after the legal review, without a new image.
+ */
+export const getCertificateLegalBasis = () => env('NEXT_PRIVATE_CERTIFICATE_LEGAL_BASIS')?.trim() || null;
+
+/**
+ * Name of the timestamp authority shown in the certificate, or null when no
+ * TSA is configured (then the certificate does not mention one).
+ * `NEXT_PRIVATE_SIGNING_TIMESTAMP_AUTHORITY_LABEL` wins; otherwise the host
+ * names of the URLs in `NEXT_PRIVATE_SIGNING_TIMESTAMP_AUTHORITY`.
+ */
+export const getTimestampAuthorityLabel = () => {
+  const urls = (env('NEXT_PRIVATE_SIGNING_TIMESTAMP_AUTHORITY') ?? '')
+    .split(',')
+    .map((url) => url.trim())
+    .filter(Boolean);
+
+  if (urls.length === 0) {
+    return null;
+  }
+
+  const label = env('NEXT_PRIVATE_SIGNING_TIMESTAMP_AUTHORITY_LABEL')?.trim();
+
+  if (label) {
+    return label;
+  }
+
+  const hosts = urls.map((url) => {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return url;
+    }
+  });
+
+  return [...new Set(hosts)].join(', ');
+};

@@ -20,6 +20,7 @@ import { getSignatureFontFamily } from '../../constants/pdf';
 import { RECIPIENT_ROLE_SIGNING_REASONS, RECIPIENT_ROLES_DESCRIPTION } from '../../constants/recipient-roles';
 import type { TDocumentAuditLogBaseSchema } from '../../types/document-audit-logs';
 import { svgToPng } from '../../utils/images/svg-to-png';
+import { describeTimeZone } from '../../utils/signing-verification';
 import { ensureFontLibrary } from './helpers';
 
 type ColumnWidths = [number, number, number];
@@ -51,6 +52,12 @@ export type CertificateVerification = {
   completed: number;
   total: number;
   originalSha256: string | null;
+  /** IANA zone for the dates in the certificate (ProKey layout). */
+  timeZone: string;
+  /** Timestamp authority name, or null when no TSA is configured. */
+  timestampAuthority: string | null;
+  /** Legal basis sentence, only once validated (env); null hides the line. */
+  legalBasis: string | null;
 };
 
 type GenerateCertificateOptions = {
@@ -101,6 +108,10 @@ const contentMaxWidth = 768;
 
 const titleFontSize = 18;
 
+// ProKey layout (NEXT_PRIVATE_SIGNING_VERIFICATION).
+const cardFill = 'rgba(255, 255, 255, 0.92)';
+const brandBlue = '#2563FF';
+
 type RenderLabelAndTextOptions = {
   label: string;
   text: string;
@@ -108,6 +119,8 @@ type RenderLabelAndTextOptions = {
   y?: number;
   labelFill?: string;
   valueFill?: string;
+  /** 'word' keeps words whole (ProKey layout); upstream breaks anywhere. */
+  wrap?: 'char' | 'word';
 };
 
 const renderLabelAndText = (options: RenderLabelAndTextOptions) => {
@@ -139,7 +152,7 @@ const renderLabelAndText = (options: RenderLabelAndTextOptions) => {
     fontFamily: 'Inter',
     text: options.text,
     fill: valueFill,
-    wrap: 'char',
+    wrap: options.wrap ?? 'char',
     fontSize: textSm,
   });
 
@@ -200,10 +213,17 @@ const renderRowHeader = (options: RenderRowHeaderOptions) => {
 
 const columnPadding = 10;
 
+// ProKey layout: dates in the certificate zone, which the header names once.
+const formatLogDate = (date: Date, timeZone?: string) =>
+  timeZone
+    ? DateTime.fromJSDate(date).setZone(timeZone).toFormat('dd/MM/yyyy HH:mm:ss')
+    : DateTime.fromJSDate(date).setLocale(APP_I18N_OPTIONS.defaultLocale).toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)');
+
 type RenderColumnOptions = {
   recipient: CertificateRecipient;
   width: number;
   i18n: I18n;
+  timeZone?: string;
   envelopeOwner: {
     name: string;
     email: string;
@@ -276,7 +296,7 @@ const renderColumnOne = (options: RenderColumnOptions) => {
 };
 
 const renderColumnTwo = (options: RenderColumnOptions) => {
-  const { recipient, width, i18n } = options;
+  const { recipient, width, i18n, timeZone } = options;
 
   // Column 2: Signature
   const column = new Konva.Group();
@@ -398,6 +418,7 @@ const renderColumnTwo = (options: RenderColumnOptions) => {
   const relevantLog = isRejected ? recipient.logs.rejected : recipient.logs.completed;
 
   const ipLabelAndText = renderLabelAndText({
+    wrap: timeZone ? 'word' : undefined,
     label: i18n._(msg`IP Address`),
     text: relevantLog?.ipAddress ?? i18n._(msg`Unknown`),
     width,
@@ -406,6 +427,7 @@ const renderColumnTwo = (options: RenderColumnOptions) => {
   column.add(ipLabelAndText);
 
   const deviceLabelAndText = renderLabelAndText({
+    wrap: timeZone ? 'word' : undefined,
     label: i18n._(msg`Device`),
     text: getDevice(relevantLog?.userAgent),
     width,
@@ -417,7 +439,7 @@ const renderColumnTwo = (options: RenderColumnOptions) => {
 };
 
 const renderColumnThree = (options: RenderColumnOptions) => {
-  const { recipient, width, i18n, envelopeOwner } = options;
+  const { recipient, width, i18n, envelopeOwner, timeZone } = options;
 
   const column = new Konva.Group();
 
@@ -432,21 +454,15 @@ const renderColumnThree = (options: RenderColumnOptions) => {
     {
       label: i18n._(msg`Sent`),
       value: recipient.logs.emailed
-        ? DateTime.fromJSDate(recipient.logs.emailed.createdAt)
-            .setLocale(APP_I18N_OPTIONS.defaultLocale)
-            .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
+        ? formatLogDate(recipient.logs.emailed.createdAt, timeZone)
         : recipient.logs.sent
-          ? DateTime.fromJSDate(recipient.logs.sent.createdAt)
-              .setLocale(APP_I18N_OPTIONS.defaultLocale)
-              .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
+          ? formatLogDate(recipient.logs.sent.createdAt, timeZone)
           : i18n._(msg`Unknown`),
     },
     {
       label: i18n._(msg`Viewed`),
       value: recipient.logs.opened
-        ? DateTime.fromJSDate(recipient.logs.opened.createdAt)
-            .setLocale(APP_I18N_OPTIONS.defaultLocale)
-            .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
+        ? formatLogDate(recipient.logs.opened.createdAt, timeZone)
         : i18n._(msg`Unknown`),
     },
   ];
@@ -454,9 +470,7 @@ const renderColumnThree = (options: RenderColumnOptions) => {
   if (recipient.logs.rejected) {
     itemsToRender.push({
       label: i18n._(msg`Rejected`),
-      value: DateTime.fromJSDate(recipient.logs.rejected.createdAt)
-        .setLocale(APP_I18N_OPTIONS.defaultLocale)
-        .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)'),
+      value: formatLogDate(recipient.logs.rejected.createdAt, timeZone),
       labelFill: textRejectedRed,
       valueFill: textRejectedRed,
     });
@@ -464,9 +478,7 @@ const renderColumnThree = (options: RenderColumnOptions) => {
     itemsToRender.push({
       label: i18n._(msg`Signed`),
       value: recipient.logs.completed
-        ? DateTime.fromJSDate(recipient.logs.completed.createdAt)
-            .setLocale(APP_I18N_OPTIONS.defaultLocale)
-            .toFormat('yyyy-MM-dd hh:mm:ss a (ZZZZ)')
+        ? formatLogDate(recipient.logs.completed.createdAt, timeZone)
         : i18n._(msg`Unknown`),
     });
   }
@@ -485,6 +497,7 @@ const renderColumnThree = (options: RenderColumnOptions) => {
 
   for (const [index, item] of itemsToRender.entries()) {
     const labelAndText = renderLabelAndText({
+      wrap: timeZone ? 'word' : undefined,
       label: item.label,
       text: item.value,
       width,
@@ -502,6 +515,7 @@ type RenderRowOptions = {
   recipient: CertificateRecipient;
   columnWidths: ColumnWidths;
   i18n: I18n;
+  timeZone?: string;
   envelopeOwner: {
     name: string;
     email: string;
@@ -509,7 +523,7 @@ type RenderRowOptions = {
 };
 
 const renderRow = (options: RenderRowOptions) => {
-  const { recipient, columnWidths, i18n, envelopeOwner } = options;
+  const { recipient, columnWidths, i18n, envelopeOwner, timeZone } = options;
 
   const rowGroup = new Konva.Group();
 
@@ -542,6 +556,7 @@ const renderRow = (options: RenderRowOptions) => {
     width: columnWidths[1],
     i18n,
     envelopeOwner,
+    timeZone,
   });
   columnTwoGroup.setAttrs({
     x: rowPadding + columnWidths[0],
@@ -555,6 +570,7 @@ const renderRow = (options: RenderRowOptions) => {
     width: columnWidths[2],
     i18n,
     envelopeOwner,
+    timeZone,
   });
   columnThreeGroup.setAttrs({
     x: rowPadding + columnWidths[0] + columnWidths[1],
@@ -637,14 +653,14 @@ const renderBranding = async ({ qrToken, i18n }: { qrToken: string | null; i18n:
 type RenderVerificationOptions = {
   verification: CertificateVerification;
   width: number;
-  showPoweredBy: boolean;
   i18n: I18n;
 };
 
 // Verification block (NEXT_PRIVATE_SIGNING_VERIFICATION): QR code with the
-// public URL written next to it, signatures completed, SHA-256 of the
-// original file and how to check the document. Replaces the branding group.
-const renderVerification = async ({ verification, width, showPoweredBy, i18n }: RenderVerificationOptions) => {
+// public URL written next to it, signatures completed, legal basis, SHA-256 of
+// the original file and how to check the document. Goes at the top of the
+// first page, under the ProKey header.
+const renderVerification = async ({ verification, width, i18n }: RenderVerificationOptions) => {
   const group = new Konva.Group();
 
   const padding = 14;
@@ -689,7 +705,7 @@ const renderVerification = async ({ verification, width, showPoweredBy, i18n }: 
   };
 
   const addLabelAndText = (label: string, text: string) => {
-    const node = renderLabelAndText({ label, text, width: textWidth, y });
+    const node = renderLabelAndText({ label, text, width: textWidth, y, wrap: 'word' });
 
     node.x(textX);
     group.add(node);
@@ -707,6 +723,10 @@ const renderVerification = async ({ verification, width, showPoweredBy, i18n }: 
 
   if (verification.total > 0) {
     addLabelAndText(i18n._(msg`Signatures completed`), i18n._(msg`${verification.completed} of ${verification.total}`));
+  }
+
+  if (verification.legalBasis) {
+    addText(verification.legalBasis);
   }
 
   if (verification.originalSha256) {
@@ -731,28 +751,19 @@ const renderVerification = async ({ verification, width, showPoweredBy, i18n }: 
 
   const boxHeight = Math.max(y - gap, padding + qrSize) + padding;
 
-  group.add(
-    new Konva.Rect({
-      x: 0,
-      y: 0,
-      width,
-      height: boxHeight,
-      stroke: '#e5e7eb',
-      strokeWidth: 1.5,
-      cornerRadius: 8,
-    }),
-  );
+  const box = new Konva.Rect({
+    x: 0,
+    y: 0,
+    width,
+    height: boxHeight,
+    stroke: '#e5e7eb',
+    strokeWidth: 1.5,
+    cornerRadius: 8,
+    fill: cardFill,
+  });
 
-  if (showPoweredBy) {
-    const branding = await renderBranding({ qrToken: null, i18n });
-
-    branding.setAttrs({
-      x: width - branding.getClientRect().width,
-      y: boxHeight + 12,
-    });
-
-    group.add(branding);
-  }
+  group.add(box);
+  box.moveToBottom();
 
   return group;
 };
@@ -760,6 +771,9 @@ const renderVerification = async ({ verification, width, showPoweredBy, i18n }: 
 type GroupRowsIntoPagesOptions = {
   recipients: CertificateRecipient[];
   maxHeight: number;
+  /** Height left for the table on the first page, when it differs (ProKey layout). */
+  firstPageMaxHeight?: number;
+  timeZone?: string;
   i18n: I18n;
   columnWidths: ColumnWidths;
   envelopeOwner: {
@@ -769,19 +783,20 @@ type GroupRowsIntoPagesOptions = {
 };
 
 const groupRowsIntoPages = (options: GroupRowsIntoPagesOptions) => {
-  const { recipients, maxHeight, i18n, columnWidths, envelopeOwner } = options;
+  const { recipients, maxHeight, i18n, columnWidths, envelopeOwner, timeZone } = options;
+  const firstPageMaxHeight = options.firstPageMaxHeight ?? maxHeight;
 
   const rowHeader = renderRowHeader({ columnWidths, i18n });
   const rowHeaderHeight = rowHeader.getClientRect().height;
 
   const groupedRows: Konva.Group[][] = [[]];
 
-  let availablePageHeight = maxHeight - rowHeaderHeight;
+  let availablePageHeight = firstPageMaxHeight - rowHeaderHeight;
   let currentGroupedRowIndex = 0;
 
   // Group rows into pages.
   for (const recipient of recipients) {
-    const row = renderRow({ recipient, columnWidths, i18n, envelopeOwner });
+    const row = renderRow({ recipient, columnWidths, i18n, envelopeOwner, timeZone });
 
     const rowHeight = row.getClientRect().height;
 
@@ -804,10 +819,12 @@ type RenderTablesOptions = {
   groupedRows: Konva.Group[][];
   columnWidths: ColumnWidths;
   i18n: I18n;
+  /** White card behind the table, over the page background (ProKey layout). */
+  filled?: boolean;
 };
 
 const renderTables = (options: RenderTablesOptions) => {
-  const { groupedRows, columnWidths, i18n } = options;
+  const { groupedRows, columnWidths, i18n, filled } = options;
 
   const tables: Konva.Group[] = [];
 
@@ -837,13 +854,433 @@ const renderTables = (options: RenderTablesOptions) => {
       stroke: '#e5e7eb',
       strokeWidth: 1.5,
       cornerRadius: 8,
+      ...(filled ? { fill: cardFill } : {}),
     });
     table.add(cardRect);
+
+    if (filled) {
+      cardRect.moveToBottom();
+    }
 
     tables.push(table);
   }
 
   return tables;
+};
+
+// ---------------------------------------------------------------------------
+// ProKey layout (NEXT_PRIVATE_SIGNING_VERIFICATION): header with the ProKey
+// logo, verification block at the top of the first page, security border
+// (key teeth) and microtext background, dates in the certificate zone and
+// "prokey.com.br" in the footer. The upstream layout above is unchanged.
+// ---------------------------------------------------------------------------
+
+// Brand gradient and logo strokes, from quadro_chaves_app/src/assets/brand.
+const brandGradientStops = [0, '#00A6FF', 0.45, '#2563FF', 1, '#7B2CFF'];
+const hexLogoPaths = [
+  'M256 58 L427 157 L427 355 L256 454 L85 355 L85 157 Z',
+  'M256 168 L332 212 L332 300 L256 344 L180 300 L180 212 Z',
+];
+// Bounding box of the hexagon in the 512 x 512 logo.
+const hexLogoBox = { x: 85, y: 58, width: 342, height: 396 };
+
+// Key teeth profile used by the border: plateaus and ramps, 0 to 1.
+const keyTeethProfile = [0, 0.15, 0.9, 0.9, 0.45, 0.45, 0.8, 0.8, 0.25, 0.25, 0.65, 0.65, 0];
+
+const keyTeeth = (distance: number, period: number) => {
+  const position = (((distance % period) + period) % period) / period;
+  const scaled = position * (keyTeethProfile.length - 1);
+  const index = Math.floor(scaled);
+  const fraction = scaled - index;
+
+  return keyTeethProfile[index] + (keyTeethProfile[index + 1] - keyTeethProfile[index]) * fraction;
+};
+
+type FramePoint = [x: number, y: number, normalX: number, normalY: number];
+
+// Point and inward normal at a distance along a rectangle, clockwise from the
+// top left corner.
+const framePoint = (x0: number, y0: number, width: number, height: number, distance: number): FramePoint => {
+  const perimeter = 2 * (width + height);
+  const d = ((distance % perimeter) + perimeter) % perimeter;
+
+  if (d < width) {
+    return [x0 + d, y0, 0, 1];
+  }
+
+  if (d < width + height) {
+    return [x0 + width, y0 + (d - width), -1, 0];
+  }
+
+  if (d < 2 * width + height) {
+    return [x0 + width - (d - width - height), y0 + height, 0, -1];
+  }
+
+  return [x0, y0 + height - (d - 2 * width - height), 1, 0];
+};
+
+const traceHexagon = (c: CanvasRenderingContext2D, cx: number, cy: number, radius: number) => {
+  c.beginPath();
+
+  for (let k = 0; k < 6; k++) {
+    const angle = -Math.PI / 2 + (k * Math.PI) / 3;
+    const x = cx + radius * Math.cos(angle);
+    const y = cy + radius * Math.sin(angle);
+
+    if (k === 0) {
+      c.moveTo(x, y);
+    } else {
+      c.lineTo(x, y);
+    }
+  }
+
+  c.closePath();
+};
+
+type RenderSecurityBackgroundOptions = {
+  pageWidth: number;
+  pageHeight: number;
+  microtext: string;
+};
+
+// Drawn in millimetres (the page width is 210 mm on A4) and scaled to points.
+const renderSecurityBackground = ({ pageWidth, pageHeight, microtext }: RenderSecurityBackgroundOptions) =>
+  new Konva.Shape({
+    listening: false,
+    sceneFunc: (konvaContext) => {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const c = konvaContext._context as unknown as CanvasRenderingContext2D;
+      const unit = pageWidth / 210;
+      const width = pageWidth / unit;
+      const height = pageHeight / unit;
+
+      c.save();
+      c.scale(unit, unit);
+
+      const gradient = c.createLinearGradient(0, 0, width, height);
+
+      for (let i = 0; i < brandGradientStops.length; i += 2) {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        gradient.addColorStop(brandGradientStops[i] as number, brandGradientStops[i + 1] as string);
+      }
+
+      // Background: microtext lines, shifted on each line.
+      c.fillStyle = gradient;
+      c.globalAlpha = 0.09;
+      c.font = '500 1.35px Inter';
+
+      const line = `${microtext} · `.repeat(Math.ceil((width * 2) / (microtext.length + 3)));
+
+      // Outlines, not text: the microtext must not show up when the PDF text
+      // is copied, searched or read aloud.
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const skia = c as unknown as { outlineText?: (text: string) => Path2D };
+      const outline = typeof skia.outlineText === 'function' ? skia.outlineText(line) : null;
+
+      for (let y = 2, k = 0; y < height + 2; y += 2.4, k++) {
+        if (outline) {
+          c.save();
+          c.translate(-((k * 7) % 40), y);
+          c.fill(outline);
+          c.restore();
+        }
+      }
+
+      // Border: parallel lines that follow the key teeth.
+      const band = 7;
+      const outer = 5;
+      const frameWidth = width - outer * 2;
+      const frameHeight = height - outer * 2;
+      const perimeter = 2 * (frameWidth + frameHeight);
+
+      c.strokeStyle = gradient;
+      c.lineJoin = 'round';
+
+      for (let k = 0; k < 8; k++) {
+        c.globalAlpha = 0.35 + 0.06 * k;
+        c.lineWidth = k === 7 ? 0.32 : 0.14;
+        c.beginPath();
+
+        for (let d = 0; d <= perimeter; d += 0.25) {
+          const [x, y, nx, ny] = framePoint(outer, outer, frameWidth, frameHeight, d);
+          const offset = 0.6 + k * 0.42 + 2.6 * keyTeeth(d + k * 0.35, 18);
+
+          if (d === 0) {
+            c.moveTo(x + nx * offset, y + ny * offset);
+          } else {
+            c.lineTo(x + nx * offset, y + ny * offset);
+          }
+        }
+
+        c.closePath();
+        c.stroke();
+      }
+
+      c.globalAlpha = 0.85;
+      c.lineWidth = 0.32;
+      c.strokeRect(outer, outer, frameWidth, frameHeight);
+
+      const inner = outer + band + 1.6;
+
+      c.globalAlpha = 0.6;
+      c.lineWidth = 0.18;
+      c.strokeRect(inner, inner, width - inner * 2, height - inner * 2);
+
+      // ProKey hexagon in each corner, over a white hexagon.
+      const corner = 9.5;
+      const radius = 5.2;
+
+      for (const [cx, cy] of [
+        [corner, corner],
+        [width - corner, corner],
+        [corner, height - corner],
+        [width - corner, height - corner],
+      ]) {
+        c.globalAlpha = 1;
+        c.fillStyle = '#FFFFFF';
+        traceHexagon(c, cx, cy, radius * 1.18);
+        c.fill();
+
+        c.globalAlpha = 0.95;
+        c.lineWidth = radius * 0.12;
+        traceHexagon(c, cx, cy, radius);
+        c.stroke();
+        traceHexagon(c, cx, cy, radius * 0.44);
+        c.stroke();
+      }
+
+      c.restore();
+    },
+  });
+
+type RenderProKeyHeaderOptions = {
+  width: number;
+  verification: CertificateVerification;
+  i18n: I18n;
+};
+
+// Logo on the left, as tall as the text block on the right: title and the
+// line with the time zone and the timestamp authority.
+const renderProKeyHeader = ({ width, verification, i18n }: RenderProKeyHeaderOptions) => {
+  const group = new Konva.Group();
+
+  const title = new Konva.Text({
+    x: 0,
+    y: 0,
+    width,
+    align: 'right',
+    text: i18n._(msg`Signing Certificate`),
+    fontFamily: 'Inter',
+    fontSize: titleFontSize,
+    fontStyle: '700',
+    fill: textForeground,
+  });
+
+  const zone = describeTimeZone(verification.timeZone, new Date());
+  const tsa = verification.timestampAuthority;
+
+  const subtitle = new Konva.Text({
+    x: 0,
+    y: title.height() + 4,
+    width,
+    align: 'right',
+    text: tsa
+      ? i18n._(msg`Dates and times in ${zone}. Timestamp by ${tsa} (RFC 3161).`)
+      : i18n._(msg`Dates and times in ${zone}.`),
+    fontFamily: 'Inter',
+    fontSize: textSm,
+    fill: textMutedForeground,
+  });
+
+  const blockHeight = subtitle.y() + subtitle.height();
+  const scale = blockHeight / hexLogoBox.height;
+
+  for (const data of hexLogoPaths) {
+    group.add(
+      new Konva.Path({
+        data,
+        x: -hexLogoBox.x * scale,
+        y: -hexLogoBox.y * scale,
+        scaleX: scale,
+        scaleY: scale,
+        strokeWidth: 30,
+        lineJoin: 'round',
+        strokeLinearGradientStartPoint: { x: 92, y: 76 },
+        strokeLinearGradientEndPoint: { x: 420, y: 436 },
+        strokeLinearGradientColorStops: brandGradientStops,
+      }),
+    );
+  }
+
+  group.add(
+    new Konva.Text({
+      x: hexLogoBox.width * scale + 8,
+      y: 0,
+      height: blockHeight,
+      verticalAlign: 'middle',
+      text: 'ProKey',
+      fontFamily: 'Inter',
+      fontSize: Math.round(blockHeight * 0.62),
+      fontStyle: '700',
+      fill: '#0B1021',
+    }),
+  );
+
+  group.add(title);
+  group.add(subtitle);
+
+  return group;
+};
+
+type RenderProKeyFooterOptions = {
+  x: number;
+  y: number;
+  width: number;
+  envelopeId: string;
+  i18n: I18n;
+};
+
+const renderProKeyFooter = ({ x, y, width, envelopeId, i18n }: RenderProKeyFooterOptions) => {
+  const group = new Konva.Group({ x, y });
+
+  group.add(
+    new Konva.Text({
+      x: 0,
+      y: 0,
+      text: `${i18n._(msg`Envelope ID`)}: ${envelopeId}`,
+      fontFamily: 'Inter',
+      fontSize: textXs,
+      fill: textMutedForegroundLight,
+    }),
+  );
+
+  const site = new Konva.Text({
+    y: -1,
+    text: 'prokey.com.br',
+    fontFamily: 'Inter',
+    fontSize: textSm + 1,
+    fontStyle: '700',
+    fill: brandBlue,
+  });
+
+  site.x(width - site.width());
+
+  const label = new Konva.Text({
+    y: 0,
+    text: `${i18n._(msg`Signing certificate provided by`)}: `,
+    fontFamily: 'Inter',
+    fontSize: textXs,
+    fontStyle: fontMedium,
+    fill: textForeground,
+  });
+
+  label.x(site.x() - label.width() - 2);
+
+  group.add(label);
+  group.add(site);
+
+  return group;
+};
+
+type RenderProKeyCertificateOptions = {
+  recipients: CertificateRecipient[];
+  envelopeId: string;
+  verification: CertificateVerification;
+  i18n: I18n;
+  envelopeOwner: {
+    name: string;
+    email: string;
+  };
+  pageWidth: number;
+  pageHeight: number;
+};
+
+const renderProKeyCertificate = async ({
+  recipients,
+  envelopeId,
+  verification,
+  i18n,
+  envelopeOwner,
+  pageWidth,
+  pageHeight,
+}: RenderProKeyCertificateOptions) => {
+  // Millimetres to points, as the border is drawn.
+  const unit = pageWidth / 210;
+  const sectionGap = 16;
+
+  const tableWidth = Math.min(pageWidth - Math.round(19 * unit) * 2, contentMaxWidth);
+  const tableContentWidth = tableWidth - rowPadding * 2;
+  const margin = (pageWidth - tableWidth) / 2;
+
+  const columnWidths: ColumnWidths = [
+    (tableContentWidth * columnWidthPercentages[0]) / 100,
+    (tableContentWidth * columnWidthPercentages[1]) / 100,
+    (tableContentWidth * columnWidthPercentages[2]) / 100,
+  ];
+
+  const headerTop = Math.round(17 * unit);
+  const headerHeight = renderProKeyHeader({ width: tableWidth, verification, i18n }).getClientRect().height;
+  const contentTop = headerTop + headerHeight + sectionGap;
+
+  const footerY = pageHeight - Math.round(15 * unit) - textXs;
+  const contentBottom = footerY - 12;
+
+  const verificationGroup = await renderVerification({ verification, width: tableWidth, i18n });
+  const verificationHeight = verificationGroup.getClientRect().height;
+
+  const maxTableHeight = contentBottom - contentTop;
+
+  const groupedRows = groupRowsIntoPages({
+    recipients,
+    maxHeight: maxTableHeight,
+    firstPageMaxHeight: maxTableHeight - verificationHeight - sectionGap,
+    columnWidths,
+    i18n,
+    envelopeOwner,
+    timeZone: verification.timeZone,
+  });
+
+  const tables = renderTables({ groupedRows, columnWidths, i18n, filled: true });
+  const microtext = i18n._(msg`PROKEY · VERIFIABLE SIGNATURE`);
+
+  let stage: Konva.Stage | null = new Konva.Stage({ width: pageWidth, height: pageHeight });
+  const pages: Uint8Array[] = [];
+
+  for (const [index, table] of tables.entries()) {
+    stage.destroyChildren();
+    const page = new Konva.Layer();
+
+    page.add(renderSecurityBackground({ pageWidth, pageHeight, microtext }));
+
+    const header = renderProKeyHeader({ width: tableWidth, verification, i18n });
+    header.setAttrs({ x: margin, y: headerTop } satisfies Partial<Konva.GroupConfig>);
+    page.add(header);
+
+    let y = contentTop;
+
+    if (index === 0) {
+      verificationGroup.setAttrs({ x: margin, y } satisfies Partial<Konva.GroupConfig>);
+      page.add(verificationGroup);
+      y += verificationHeight + sectionGap;
+    }
+
+    table.setAttrs({ x: margin, y } satisfies Partial<Konva.GroupConfig>);
+    page.add(table);
+
+    page.add(renderProKeyFooter({ x: margin, y: footerY, width: tableWidth, envelopeId, i18n }));
+
+    stage.add(page);
+
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const canvas = page.canvas._canvas as unknown as Canvas;
+    const buffer = await canvas.toBuffer('pdf');
+    pages.push(new Uint8Array(buffer));
+  }
+
+  stage.destroy();
+  stage = null;
+
+  return pages;
 };
 
 export async function renderCertificate({
@@ -858,6 +1295,18 @@ export async function renderCertificate({
   pageHeight,
 }: GenerateCertificateOptions) {
   ensureFontLibrary();
+
+  if (verification) {
+    return await renderProKeyCertificate({
+      recipients,
+      envelopeId,
+      verification,
+      i18n,
+      envelopeOwner,
+      pageWidth,
+      pageHeight,
+    });
+  }
 
   const minimumMargin = 10;
 
@@ -886,12 +1335,8 @@ export async function renderCertificate({
 
   const tables = renderTables({ groupedRows, columnWidths, i18n });
 
-  const brandingGroup = verification
-    ? await renderVerification({ verification, width: tableWidth, showPoweredBy: !hidePoweredBy, i18n })
-    : await renderBranding({ qrToken, i18n });
-
-  // The verification block is shown even when the "powered by" branding is hidden.
-  const showBrandingGroup = Boolean(verification) || !hidePoweredBy;
+  const brandingGroup = await renderBranding({ qrToken, i18n });
+  const showBrandingGroup = !hidePoweredBy;
   const brandingRect = brandingGroup.getClientRect();
   const brandingTopPadding = 24;
 

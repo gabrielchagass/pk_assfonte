@@ -3,6 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   chunkHash,
   countSignatures,
+  describeTimeZone,
+  getCertificateLegalBasis,
+  getCertificateTimeZone,
+  getTimestampAuthorityLabel,
   getVerificationUrl,
   IS_SIGNING_VERIFICATION_ENABLED,
   sha256Hex,
@@ -50,5 +54,44 @@ describe('signing verification', () => {
   it('splits the hash in two lines', () => {
     const hash = 'a'.repeat(32) + 'b'.repeat(32);
     expect(chunkHash(hash)).toEqual(['a'.repeat(32), 'b'.repeat(32)]);
+  });
+
+  it('uses Brasília unless another zone is configured', () => {
+    vi.stubEnv('NEXT_PRIVATE_CERTIFICATE_TIMEZONE', '');
+    expect(getCertificateTimeZone()).toBe('America/Sao_Paulo');
+
+    vi.stubEnv('NEXT_PRIVATE_CERTIFICATE_TIMEZONE', 'America/Manaus');
+    expect(getCertificateTimeZone()).toBe('America/Manaus');
+  });
+
+  it('prints the legal basis only when it is configured', () => {
+    vi.stubEnv('NEXT_PRIVATE_CERTIFICATE_LEGAL_BASIS', '  ');
+    expect(getCertificateLegalBasis()).toBeNull();
+
+    vi.stubEnv('NEXT_PRIVATE_CERTIFICATE_LEGAL_BASIS', 'Texto validado. ');
+    expect(getCertificateLegalBasis()).toBe('Texto validado.');
+  });
+
+  it('describes the zone with its offset at the given date', () => {
+    const at = new Date('2026-11-12T04:24:08Z');
+
+    expect(describeTimeZone('America/Sao_Paulo', at)).toBe('GMT -03:00 (Brasília)');
+    expect(describeTimeZone('America/Manaus', at)).toBe('GMT -04:00 (Manaus)');
+  });
+
+  it('names the timestamp authority only when one is configured', () => {
+    vi.stubEnv('NEXT_PRIVATE_SIGNING_TIMESTAMP_AUTHORITY', '');
+    vi.stubEnv('NEXT_PRIVATE_SIGNING_TIMESTAMP_AUTHORITY_LABEL', 'DigiCert');
+    expect(getTimestampAuthorityLabel()).toBeNull();
+
+    vi.stubEnv('NEXT_PRIVATE_SIGNING_TIMESTAMP_AUTHORITY', 'http://timestamp.digicert.com');
+    expect(getTimestampAuthorityLabel()).toBe('DigiCert');
+
+    vi.stubEnv('NEXT_PRIVATE_SIGNING_TIMESTAMP_AUTHORITY_LABEL', '');
+    vi.stubEnv(
+      'NEXT_PRIVATE_SIGNING_TIMESTAMP_AUTHORITY',
+      'http://timestamp.digicert.com, http://timestamp.sectigo.com,http://timestamp.digicert.com',
+    );
+    expect(getTimestampAuthorityLabel()).toBe('timestamp.digicert.com, timestamp.sectigo.com');
   });
 });

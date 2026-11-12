@@ -16338,3 +16338,15 @@ msgstr "Não foi possível ler o arquivo {0}."
 #: apps/remix/app/components/general/document/document-verification-panel.tsx
 msgid "Choose file"
 msgstr "Escolher arquivo"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Dates and times in {zone}. Timestamp by {tsa} (RFC 3161)."
+msgstr "Datas e horários em {zone}. Carimbo do tempo por {tsa} (RFC 3161)."
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Dates and times in {zone}."
+msgstr "Datas e horários em {zone}."
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "PROKEY · VERIFIABLE SIGNATURE"
+msgstr "PROKEY · ASSINATURA VERIFICÁVEL"
