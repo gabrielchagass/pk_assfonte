@@ -32,6 +32,7 @@ import { fieldsContainUnsignedRequiredField } from '../../../utils/advanced-fiel
 import { isDocumentCompleted } from '../../../utils/document';
 import { createDocumentAuditLogData } from '../../../utils/document-audit-logs';
 import { mapDocumentIdToSecondaryId } from '../../../utils/envelope';
+import { IS_SIGNING_VERIFICATION_ENABLED, sha256Hex } from '../../../utils/signing-verification';
 import { jobs } from '../../client';
 import type { JobRunIO } from '../../client/_internal/job';
 import type { TSealDocumentJobDefinition } from './seal-document';
@@ -142,14 +143,20 @@ export const run = async ({ payload, io }: { payload: TSealDocumentJobDefinition
     }
 
     if (!envelope.qrToken) {
-      await prisma.envelope.update({
+      const { qrToken } = await prisma.envelope.update({
         where: {
           id: envelope.id,
         },
         data: {
           qrToken: prefixedId('qr'),
         },
+        select: {
+          qrToken: true,
+        },
       });
+
+      // The certificate below links to this token.
+      envelope.qrToken = qrToken;
     }
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -225,6 +232,16 @@ export const run = async ({ payload, io }: { payload: TSealDocumentJobDefinition
 
         const { width: pageWidth, height: pageHeight } = getLastPageDimensions(pdfDoc);
 
+        // SHA-256 of the file as uploaded, before any field was inserted.
+        const originalSha256 = IS_SIGNING_VERIFICATION_ENABLED()
+          ? await sha256Hex(
+              await getFileServerSide({
+                type: envelopeItem.documentData.type,
+                data: envelopeItem.documentData.initialData,
+              }),
+            )
+          : null;
+
         const additionalAuditLogs = [
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           {
@@ -242,6 +259,7 @@ export const run = async ({ payload, io }: { payload: TSealDocumentJobDefinition
           recipients: envelope.recipients,
           fields,
           language: envelope.documentMeta.language,
+          originalSha256,
           envelopeOwner: {
             email: envelope.user.email,
             name: envelope.user.name || '',

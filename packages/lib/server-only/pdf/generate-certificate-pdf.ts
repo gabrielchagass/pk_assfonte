@@ -6,11 +6,13 @@ import { FieldType } from '@prisma/client';
 import { prop, sortBy } from 'remeda';
 import { match } from 'ts-pattern';
 
+import { NEXT_PUBLIC_WEBAPP_URL } from '../../constants/app';
 import { ZSupportedLanguageCodeSchema } from '../../constants/i18n';
 import type { TDocumentAuditLogBaseSchema } from '../../types/document-audit-logs';
 import { extractDocumentAuthMethods } from '../../utils/document-auth';
 import { getDefaultRecipientAuthKind } from '../../utils/emailless-signing';
 import { getTranslations } from '../../utils/i18n';
+import { countSignatures, getVerificationUrl, IS_SIGNING_VERIFICATION_ENABLED } from '../../utils/signing-verification';
 import { getDocumentCertificateAuditLogs } from '../document/get-document-certificate-audit-logs';
 import { getOrganisationClaimByTeamId } from '../organisation/get-organisation-claims';
 import { renderCertificate } from './render-certificate';
@@ -35,12 +37,17 @@ export type GenerateCertificatePdfOptions = {
     signature?: Pick<Signature, 'signatureImageAsBase64' | 'typedSignature'> | null;
   })[];
   language?: string;
+  /**
+   * SHA-256 of the original file of this envelope item, shown in the
+   * verification block. Only the sealing job passes it.
+   */
+  originalSha256?: string | null;
   pageWidth: number;
   pageHeight: number;
 };
 
 export const generateCertificatePdf = async (options: GenerateCertificatePdfOptions) => {
-  const { envelope, envelopeOwner, recipients, fields, language, pageWidth, pageHeight } = options;
+  const { envelope, envelopeOwner, recipients, fields, language, originalSha256, pageWidth, pageHeight } = options;
 
   const documentLanguage = ZSupportedLanguageCodeSchema.parse(language);
 
@@ -142,6 +149,14 @@ export const generateCertificatePdf = async (options: GenerateCertificatePdfOpti
     envelopeOwner,
     envelopeId: envelope.id,
     qrToken: envelope.qrToken,
+    verification:
+      IS_SIGNING_VERIFICATION_ENABLED() && envelope.qrToken
+        ? {
+            url: getVerificationUrl(NEXT_PUBLIC_WEBAPP_URL(), envelope.qrToken),
+            ...countSignatures(recipients),
+            originalSha256: originalSha256 ?? null,
+          }
+        : null,
     hidePoweredBy: organisationClaim.flags.hidePoweredBy ?? false,
     pageWidth,
     pageHeight,

@@ -46,10 +46,18 @@ export type CertificateRecipient = {
   };
 };
 
+export type CertificateVerification = {
+  url: string;
+  completed: number;
+  total: number;
+  originalSha256: string | null;
+};
+
 type GenerateCertificateOptions = {
   recipients: CertificateRecipient[];
   envelopeId: string;
   qrToken: string | null;
+  verification?: CertificateVerification | null;
   hidePoweredBy: boolean;
   i18n: I18n;
   envelopeOwner: {
@@ -626,6 +634,129 @@ const renderBranding = async ({ qrToken, i18n }: { qrToken: string | null; i18n:
   return branding;
 };
 
+type RenderVerificationOptions = {
+  verification: CertificateVerification;
+  width: number;
+  showPoweredBy: boolean;
+  i18n: I18n;
+};
+
+// Verification block (NEXT_PRIVATE_SIGNING_VERIFICATION): QR code with the
+// public URL written next to it, signatures completed, SHA-256 of the
+// original file and how to check the document. Replaces the branding group.
+const renderVerification = async ({ verification, width, showPoweredBy, i18n }: RenderVerificationOptions) => {
+  const group = new Konva.Group();
+
+  const padding = 14;
+  const qrSize = 96;
+  const gap = 4;
+
+  const qrSvg = renderSVG(verification.url, { ecc: 'Q' });
+  const qrPng = await svgToPng(qrSvg);
+
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const qrSkiaImage = new SkiaImage(qrPng) as unknown as HTMLImageElement;
+
+  group.add(
+    new Konva.Image({
+      image: qrSkiaImage,
+      x: padding,
+      y: padding,
+      width: qrSize,
+      height: qrSize,
+    }),
+  );
+
+  const textX = padding + qrSize + 16;
+  const textWidth = width - textX - padding;
+  let y = padding;
+
+  const addText = (text: string, config: Partial<Konva.TextConfig> = {}) => {
+    const node = new Konva.Text({
+      x: textX,
+      y,
+      width: textWidth,
+      text,
+      fontFamily: 'Inter',
+      fontSize: textSm,
+      fill: textMutedForeground,
+      wrap: 'word',
+      ...config,
+    });
+
+    group.add(node);
+    y += node.height() + gap;
+  };
+
+  const addLabelAndText = (label: string, text: string) => {
+    const node = renderLabelAndText({ label, text, width: textWidth, y });
+
+    node.x(textX);
+    group.add(node);
+    y += node.getClientRect().height + gap;
+  };
+
+  addText(i18n._(msg`Integrity and authenticity verification`), {
+    fontSize: 11,
+    fontStyle: '700',
+    fill: textForeground,
+  });
+  y += 2;
+
+  addLabelAndText(i18n._(msg`Public verification URL`), verification.url);
+
+  if (verification.total > 0) {
+    addLabelAndText(i18n._(msg`Signatures completed`), i18n._(msg`${verification.completed} of ${verification.total}`));
+  }
+
+  if (verification.originalSha256) {
+    // Label and hash on separate lines, so the hash never breaks in the middle.
+    addText(`${i18n._(msg`SHA-256 of the original file`)}:`, { fontStyle: fontMedium });
+    y -= gap / 2;
+    addText(verification.originalSha256, { wrap: 'char' });
+  }
+
+  y += 4;
+
+  addText(i18n._(msg`How to check this document`), {
+    fontStyle: '700',
+    fill: textForeground,
+  });
+
+  addText(
+    i18n._(
+      msg`This copy carries the audit data, but a printed or copied version can be altered. To check that the file is intact and that the signatures are valid, open the public verification URL or scan the QR code and compare your file on that page.`,
+    ),
+  );
+
+  const boxHeight = Math.max(y - gap, padding + qrSize) + padding;
+
+  group.add(
+    new Konva.Rect({
+      x: 0,
+      y: 0,
+      width,
+      height: boxHeight,
+      stroke: '#e5e7eb',
+      strokeWidth: 1.5,
+      cornerRadius: 8,
+    }),
+  );
+
+  if (showPoweredBy) {
+    const branding = await renderBranding({ qrToken: null, i18n });
+
+    branding.setAttrs({
+      x: width - branding.getClientRect().width,
+      y: boxHeight + 12,
+    });
+
+    group.add(branding);
+  }
+
+  return group;
+};
+
 type GroupRowsIntoPagesOptions = {
   recipients: CertificateRecipient[];
   maxHeight: number;
@@ -719,6 +850,7 @@ export async function renderCertificate({
   recipients,
   envelopeId,
   qrToken,
+  verification,
   hidePoweredBy,
   i18n,
   envelopeOwner,
@@ -754,7 +886,12 @@ export async function renderCertificate({
 
   const tables = renderTables({ groupedRows, columnWidths, i18n });
 
-  const brandingGroup = await renderBranding({ qrToken, i18n });
+  const brandingGroup = verification
+    ? await renderVerification({ verification, width: tableWidth, showPoweredBy: !hidePoweredBy, i18n })
+    : await renderBranding({ qrToken, i18n });
+
+  // The verification block is shown even when the "powered by" branding is hidden.
+  const showBrandingGroup = Boolean(verification) || !hidePoweredBy;
   const brandingRect = brandingGroup.getClientRect();
   const brandingTopPadding = 24;
 
@@ -789,7 +926,7 @@ export async function renderCertificate({
     group.add(table);
 
     // Add QR code and branding on the last page if there is space.
-    if (index === tables.length - 1 && !hidePoweredBy) {
+    if (index === tables.length - 1 && showBrandingGroup) {
       const remainingHeight = pageHeight - group.getClientRect().height - pageBottomMargin;
 
       if (brandingRect.height + brandingTopPadding <= remainingHeight) {
@@ -823,7 +960,7 @@ export async function renderCertificate({
   }
 
   // Need to create an empty page for the QR code if it hasn't been placed yet.
-  if (!hidePoweredBy && !isQrPlaced) {
+  if (showBrandingGroup && !isQrPlaced) {
     const page = new Konva.Layer();
 
     brandingGroup.setAttrs({

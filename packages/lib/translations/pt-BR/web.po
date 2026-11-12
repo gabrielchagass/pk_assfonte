@@ -16260,3 +16260,81 @@ msgstr ""
 #: packages/lib/server-only/pdf/generate-certificate-pdf.ts
 msgid "Signing link"
 msgstr "Link de assinatura"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Integrity and authenticity verification"
+msgstr "Verificação de integridade e autenticidade"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Public verification URL"
+msgstr "URL pública de verificação"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Signatures completed"
+msgstr "Assinaturas concluídas"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "{0} of {1}"
+msgstr "{0} de {1}"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "SHA-256 of the original file"
+msgstr "SHA-256 do arquivo original"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "How to check this document"
+msgstr "Como conferir este documento"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "This copy carries the audit data, but a printed or copied version can be altered. To check that the file is intact and that the signatures are valid, open the public verification URL or scan the QR code and compare your file on that page."
+msgstr "Esta via traz os dados de auditoria, mas uma versão impressa ou copiada pode ser alterada. Para conferir se o arquivo está íntegro e se as assinaturas são válidas, abra a URL pública de verificação ou leia o QR code e compare o seu arquivo nessa página."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "SHA-256 of the signed file"
+msgstr "SHA-256 do arquivo assinado"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Signatures completed: {0} of {1}"
+msgstr "Assinaturas concluídas: {0} de {1}"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Check your file"
+msgstr "Confira o seu arquivo"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Choose the PDF you received to compare it with this document. The file is checked in your browser and is not uploaded."
+msgstr "Escolha o PDF que você recebeu para compará-lo com este documento. A conferência é feita no seu navegador e o arquivo não é enviado."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file is identical to the signed document"
+msgstr "O arquivo é idêntico ao documento assinado"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} has not been altered since the signatures were completed."
+msgstr "{0} não foi alterado desde a conclusão das assinaturas."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "This is the original file, without the signatures"
+msgstr "Este é o arquivo original, sem as assinaturas"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} matches the document before it was signed. The signed version is the one available for download on this page."
+msgstr "{0} corresponde ao documento antes das assinaturas. A versão assinada é a que está disponível para baixar nesta página."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file does not match this document"
+msgstr "O arquivo não corresponde a este documento"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} was altered or is a different document. Use the file available for download on this page."
+msgstr "{0} foi alterado ou é outro documento. Use o arquivo disponível para baixar nesta página."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file {0} could not be read."
+msgstr "Não foi possível ler o arquivo {0}."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Choose file"
+msgstr "Escolher arquivo"

@@ -1,8 +1,10 @@
 import { NEXT_PUBLIC_WEBAPP_URL } from '@documenso/lib/constants/app';
 import { getDocumentByAccessToken } from '@documenso/lib/server-only/document/get-document-by-access-token';
+import { getDocumentVerificationByAccessToken } from '@documenso/lib/server-only/document/get-document-verification-by-access-token';
 import { redirect, useLoaderData } from 'react-router';
 
 import { DocumentCertificateQRView } from '~/components/general/document/document-certificate-qr-view';
+import { DocumentVerificationPanel } from '~/components/general/document/document-verification-panel';
 
 import type { Route } from './+types/share.$slug';
 
@@ -57,8 +59,11 @@ export const loader = async ({ request, params: { slug } }: Route.LoaderArgs) =>
       throw redirect('/');
     }
 
+    const verification = await getDocumentVerificationByAccessToken({ token: slug });
+
     return {
       document,
+      verification,
       token: slug,
     };
   }
@@ -74,20 +79,26 @@ export const loader = async ({ request, params: { slug } }: Route.LoaderArgs) =>
 };
 
 export default function SharePage() {
-  const { document, token } = useLoaderData<typeof loader>();
+  const { document, verification, token } = useLoaderData<typeof loader>();
 
   if (document) {
     return (
-      <DocumentCertificateQRView
-        documentId={document.id}
-        title={document.title}
-        documentTeamUrl={document.documentTeamUrl}
-        internalVersion={document.internalVersion}
-        envelopeItems={document.envelopeItems}
-        recipientCount={document.recipientCount}
-        completedDate={document.completedAt ?? undefined}
-        token={token}
-      />
+      <>
+        {verification && (
+          <DocumentVerificationPanel verification={verification} className="mx-auto mb-10 w-full max-w-screen-md" />
+        )}
+
+        <DocumentCertificateQRView
+          documentId={document.id}
+          title={document.title}
+          documentTeamUrl={document.documentTeamUrl}
+          internalVersion={document.internalVersion}
+          envelopeItems={document.envelopeItems}
+          recipientCount={document.recipientCount}
+          completedDate={document.completedAt ?? undefined}
+          token={token}
+        />
+      </>
     );
   }
 

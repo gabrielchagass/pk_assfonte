@@ -16260,3 +16260,81 @@ msgstr "Zoom out"
 #: packages/lib/server-only/pdf/generate-certificate-pdf.ts
 msgid "Signing link"
 msgstr "Signing link"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Integrity and authenticity verification"
+msgstr "Integrity and authenticity verification"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Public verification URL"
+msgstr "Public verification URL"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Signatures completed"
+msgstr "Signatures completed"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "{0} of {1}"
+msgstr "{0} of {1}"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "SHA-256 of the original file"
+msgstr "SHA-256 of the original file"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "How to check this document"
+msgstr "How to check this document"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "This copy carries the audit data, but a printed or copied version can be altered. To check that the file is intact and that the signatures are valid, open the public verification URL or scan the QR code and compare your file on that page."
+msgstr "This copy carries the audit data, but a printed or copied version can be altered. To check that the file is intact and that the signatures are valid, open the public verification URL or scan the QR code and compare your file on that page."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "SHA-256 of the signed file"
+msgstr "SHA-256 of the signed file"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Signatures completed: {0} of {1}"
+msgstr "Signatures completed: {0} of {1}"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Check your file"
+msgstr "Check your file"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Choose the PDF you received to compare it with this document. The file is checked in your browser and is not uploaded."
+msgstr "Choose the PDF you received to compare it with this document. The file is checked in your browser and is not uploaded."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file is identical to the signed document"
+msgstr "The file is identical to the signed document"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} has not been altered since the signatures were completed."
+msgstr "{0} has not been altered since the signatures were completed."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "This is the original file, without the signatures"
+msgstr "This is the original file, without the signatures"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} matches the document before it was signed. The signed version is the one available for download on this page."
+msgstr "{0} matches the document before it was signed. The signed version is the one available for download on this page."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file does not match this document"
+msgstr "The file does not match this document"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} was altered or is a different document. Use the file available for download on this page."
+msgstr "{0} was altered or is a different document. Use the file available for download on this page."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file {0} could not be read."
+msgstr "The file {0} could not be read."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Choose file"
+msgstr "Choose file"
