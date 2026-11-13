@@ -1,3 +1,9 @@
+> **Versão modificada pelo ProKey.** Este repositório é o código-fonte da
+> plataforma de assinatura usada pelo ProKey, baseada no Documenso v2.21.1, sob
+> AGPL-3.0. Modificações, datas e instruções de build: [PROKEY.md](PROKEY.md).
+> "Documenso" é marca de seus titulares; esta versão não é distribuída nem
+> endossada por eles. O texto abaixo é o README original do projeto.
+
 <img src="https://github.com/documenso/documenso/assets/13398220/a643571f-0239-46a6-a73e-6bef38d1228b" alt="Documenso Logo">
 
 <p align="center" style="margin-top: 20px">
