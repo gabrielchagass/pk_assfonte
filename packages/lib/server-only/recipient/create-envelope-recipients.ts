@@ -4,6 +4,7 @@ import type { ApiRequestMetadata } from '@documenso/lib/universal/extract-reques
 import { nanoid } from '@documenso/lib/universal/id';
 import { createDocumentAuditLogData } from '@documenso/lib/utils/document-audit-logs';
 import { createRecipientAuthOptions } from '@documenso/lib/utils/document-auth';
+import type { TRecipientDelivery } from '@documenso/lib/utils/recipient-delivery';
 import { prisma } from '@documenso/prisma';
 import { EnvelopeType, RecipientRole, SendStatus, SigningStatus } from '@prisma/client';
 
@@ -27,6 +28,7 @@ export interface CreateEnvelopeRecipientsOptions {
     signingOrder?: number | null;
     accessAuth?: TRecipientAccessAuthTypes[];
     actionAuth?: TRecipientActionAuthTypes[];
+    delivery?: TRecipientDelivery;
   }[];
   requestMetadata?: ApiRequestMetadata;
 }
@@ -135,7 +137,13 @@ export const createEnvelopeRecipients = async ({
             token: nanoid(),
             sendStatus: recipient.role === RecipientRole.CC ? SendStatus.SENT : SendStatus.NOT_SENT,
             signingStatus: recipient.role === RecipientRole.CC ? SigningStatus.SIGNED : SigningStatus.NOT_SIGNED,
-            authOptions,
+            // ProKey patch 0006: the delivery rides along in the auth options
+            // JSON column. The Prisma type only knows the upstream keys; the
+            // auth options schema ignores the extra one when it parses.
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            authOptions: (recipient.delivery
+              ? { ...authOptions, delivery: recipient.delivery }
+              : authOptions) as typeof authOptions,
           },
         });
 

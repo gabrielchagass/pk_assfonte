@@ -20,6 +20,7 @@ import { getSignatureFontFamily } from '../../constants/pdf';
 import { RECIPIENT_ROLE_SIGNING_REASONS, RECIPIENT_ROLES_DESCRIPTION } from '../../constants/recipient-roles';
 import type { TDocumentAuditLogBaseSchema } from '../../types/document-audit-logs';
 import { svgToPng } from '../../utils/images/svg-to-png';
+import type { TRecipientDelivery } from '../../utils/recipient-delivery';
 import { describeTimeZone } from '../../utils/signing-verification';
 import { ensureFontLibrary } from './helpers';
 
@@ -38,6 +39,8 @@ export type CertificateRecipient = {
     signature?: Pick<Signature, 'signatureImageAsBase64' | 'typedSignature'> | null;
   };
   authLevel: string;
+  /** ProKey layout only: how the signing link was delivered (patch 0006). */
+  delivery?: TRecipientDelivery | null;
   logs: {
     emailed: BaseAuditLog | null;
     sent: BaseAuditLog | null;
@@ -231,7 +234,7 @@ type RenderColumnOptions = {
 };
 
 const renderColumnOne = (options: RenderColumnOptions) => {
-  const { recipient, width, i18n } = options;
+  const { recipient, width, i18n, timeZone } = options;
 
   const columnGroup = new Konva.Group();
 
@@ -240,7 +243,8 @@ const renderColumnOne = (options: RenderColumnOptions) => {
   const textFontStyling = {
     x: 0,
     fontFamily: 'Inter',
-    wrap: 'char',
+    // ProKey layout (patch 0006): break by word, as in the other columns.
+    wrap: timeZone ? 'word' : 'char',
     lineHeight: 1.2,
     fill: textMutedForeground,
     width: width - columnPadding,
@@ -258,9 +262,29 @@ const renderColumnOne = (options: RenderColumnOptions) => {
     columnGroup.add(nameText);
   }
 
+  // ProKey layout (patch 0006, D45): the signer's tax id, and, without an
+  // email, the WhatsApp number that received the signing link.
+  const { delivery } = recipient;
+
+  if (delivery?.taxId) {
+    columnGroup.add(
+      new Konva.Text({
+        y: columnGroup.getClientRect().height,
+        text: `${delivery.taxId.type}: ${delivery.taxId.number}`,
+        fontSize: textBase,
+        ...textFontStyling,
+      }),
+    );
+  }
+
+  const contact =
+    !recipient.email.trim() && delivery?.channel === 'WHATSAPP' && delivery.destination
+      ? `WhatsApp:\n${delivery.destination}`
+      : recipient.email;
+
   const emailText = new Konva.Text({
     y: columnGroup.getClientRect().height,
-    text: recipient.email,
+    text: contact,
     fontSize: textBase,
     ...textFontStyling,
   });
@@ -485,15 +509,28 @@ const renderColumnThree = (options: RenderColumnOptions) => {
 
   const isOwner = recipient.email.toLowerCase() === envelopeOwner.email.toLowerCase();
 
-  itemsToRender.push({
-    label: i18n._(msg`Reason`),
-    value:
-      recipient.signingStatus === SigningStatus.REJECTED
-        ? recipient.rejectionReason || ''
-        : isOwner
-          ? i18n._(msg`I am the owner of this document`)
-          : i18n._(RECIPIENT_ROLE_SIGNING_REASONS[recipient.role]),
-  });
+  // ProKey layout (patch 0006, D45): the "reason" only repeated the role, so it
+  // is printed only for a rejection, with the reason the recipient wrote.
+  if (timeZone) {
+    if (recipient.signingStatus === SigningStatus.REJECTED) {
+      itemsToRender.push({
+        label: i18n._(msg`Rejection reason`),
+        value: recipient.rejectionReason || '',
+        labelFill: textRejectedRed,
+        valueFill: textRejectedRed,
+      });
+    }
+  } else {
+    itemsToRender.push({
+      label: i18n._(msg`Reason`),
+      value:
+        recipient.signingStatus === SigningStatus.REJECTED
+          ? recipient.rejectionReason || ''
+          : isOwner
+            ? i18n._(msg`I am the owner of this document`)
+            : i18n._(RECIPIENT_ROLE_SIGNING_REASONS[recipient.role]),
+    });
+  }
 
   for (const [index, item] of itemsToRender.entries()) {
     const labelAndText = renderLabelAndText({
@@ -544,6 +581,7 @@ const renderRow = (options: RenderRowOptions) => {
     width: columnWidths[0],
     i18n,
     envelopeOwner,
+    timeZone,
   });
   columnGroup.setAttrs({
     x: rowPadding,

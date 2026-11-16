@@ -14,7 +14,7 @@ endossada por eles.
 | | |
 |---|---|
 | Base | Documenso `v2.21.1`, commit upstream `503cd1a` |
-| Versão em uso | `2.21.1-prokey.5` (modificações 0001 a 0005) |
+| Versão em uso | `2.21.1-prokey.6` (modificações 0001 a 0006) |
 | Licença | AGPL-3.0, sem alteração; `packages/ee` não foi modificado nem é usado |
 
 O primeiro commit deste repositório é a base sem alterações. Cada
@@ -30,6 +30,7 @@ alterados. O resumo está abaixo.
 | 0003 | 12/11/2026 | Verificação pública: bloco de conferência no certificado, SHA-256 do original e página do QR que compara o arquivo no navegador | `NEXT_PRIVATE_SIGNING_VERIFICATION=true` |
 | 0004 | 12/11/2026 | Layout do certificado: cabeçalho, ordem do bloco de verificação, datas no fuso configurado, bordas e rodapé | `NEXT_PRIVATE_SIGNING_VERIFICATION=true` |
 | 0005 | 12/11/2026 | Microtexto do fundo do certificado como imagem, para o PDF ficar leve | `NEXT_PRIVATE_SIGNING_VERIFICATION=true` |
+| 0006 | 16/11/2026 | Canal, contato e CPF do signatário no certificado: a API pode informar por destinatário o canal do convite (e-mail ou WhatsApp), o destino e o CPF/CNPJ; o certificado mostra esses dados, o nível de autenticação pelo canal e o motivo só na recusa | `NEXT_PRIVATE_SIGNING_VERIFICATION=true` e campo `delivery` na criação do destinatário |
 
 Sem as variáveis, o comportamento é o do upstream.
 
@@ -43,11 +44,13 @@ Alterados (modificados pelo ProKey, conforme as datas acima):
 - `apps/remix/app/routes/_share+/share.$slug.tsx` (0003)
 - `packages/lib/jobs/definitions/internal/seal-document.handler.ts` (0003)
 - `packages/lib/server-only/document/complete-document-with-token.ts` (0001)
-- `packages/lib/server-only/pdf/generate-certificate-pdf.ts` (0001, 0003, 0004)
-- `packages/lib/server-only/pdf/render-certificate.ts` (0003, 0004, 0005)
-- `packages/lib/translations/en/web.po` (0001, 0003, 0004)
-- `packages/lib/translations/pt-BR/web.po` (0001, 0003, 0004)
+- `packages/lib/server-only/pdf/generate-certificate-pdf.ts` (0001, 0003, 0004, 0006)
+- `packages/lib/server-only/pdf/render-certificate.ts` (0003, 0004, 0005, 0006)
+- `packages/lib/server-only/recipient/create-envelope-recipients.ts` (0006)
+- `packages/lib/translations/en/web.po` (0001, 0003, 0004, 0006)
+- `packages/lib/translations/pt-BR/web.po` (0001, 0003, 0004, 0006)
 - `packages/lib/utils/i18n.ts` (0002)
+- `packages/trpc/server/envelope-router/envelope-recipients/create-envelope-recipients.types.ts` (0006)
 
 Novos (criados pelo ProKey):
 
@@ -55,6 +58,7 @@ Novos (criados pelo ProKey):
 - `packages/lib/server-only/document/get-document-verification-by-access-token.ts` (0003)
 - `packages/lib/utils/emailless-signing.ts` e `emailless-signing.test.ts` (0001)
 - `packages/lib/utils/locale-match.ts` e `locale-match.test.ts` (0002)
+- `packages/lib/utils/recipient-delivery.ts` e `recipient-delivery.test.ts` (0006)
 - `packages/lib/utils/signing-verification.ts` e `signing-verification.test.ts` (0003, 0004)
 
 ## Build
@@ -63,8 +67,8 @@ Requisitos: Node e npm nas versões do `package.json`, e Docker.
 
 ```bash
 npm ci
-(cd packages/lib && npx vitest run utils/emailless-signing.test.ts utils/locale-match.test.ts utils/signing-verification.test.ts)
-docker build -f docker/Dockerfile -t plataforma-assinatura:2.21.1-prokey.5 .
+(cd packages/lib && npx vitest run utils/emailless-signing.test.ts utils/locale-match.test.ts utils/signing-verification.test.ts utils/recipient-delivery.test.ts)
+docker build -f docker/Dockerfile -t plataforma-assinatura:2.21.1-prokey.6 .
 ```
 
 A imagem em uso é gerada deste código, sem outras alterações, com o

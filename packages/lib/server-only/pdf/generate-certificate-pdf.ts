@@ -12,6 +12,7 @@ import type { TDocumentAuditLogBaseSchema } from '../../types/document-audit-log
 import { extractDocumentAuthMethods } from '../../utils/document-auth';
 import { getDefaultRecipientAuthKind } from '../../utils/emailless-signing';
 import { getTranslations } from '../../utils/i18n';
+import { readRecipientDelivery } from '../../utils/recipient-delivery';
 import {
   countSignatures,
   getCertificateLegalBasis,
@@ -70,6 +71,8 @@ export const generateCertificatePdf = async (options: GenerateCertificatePdfOpti
     locale: documentLanguage,
     messages,
   });
+
+  const isProKeyLayout = IS_SIGNING_VERIFICATION_ENABLED() && Boolean(envelope.qrToken);
 
   const payload = {
     recipients: recipients.map((recipient) => {
@@ -135,6 +138,17 @@ export const generateCertificatePdf = async (options: GenerateCertificatePdfOpti
           .exhaustive();
       }
 
+      // ProKey patch 0006 (D45): the individual link only reached the channel
+      // the ProKey sent it to, so access to that channel is the authentication.
+      const delivery = isProKeyLayout ? readRecipientDelivery(recipient.authOptions) : null;
+
+      if (delivery && authLevel === defaultAuthLevel) {
+        authLevel =
+          delivery.channel === 'WHATSAPP'
+            ? i18n._(msg`WhatsApp (via individual link)`)
+            : i18n._(msg`Email (via individual link)`);
+      }
+
       return {
         id: recipient.id,
         name: recipient.name,
@@ -144,6 +158,7 @@ export const generateCertificatePdf = async (options: GenerateCertificatePdfOpti
         signatureField,
         rejectionReason: recipient.rejectionReason,
         authLevel,
+        delivery,
         logs: {
           emailed: emailSent ?? null,
           sent: documentSent ?? null,

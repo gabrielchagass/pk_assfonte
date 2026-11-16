@@ -16350,3 +16350,15 @@ msgstr "Dates and times in {zone}."
 #: packages/lib/server-only/pdf/render-certificate.ts
 msgid "PROKEY · VERIFIABLE SIGNATURE"
 msgstr "PROKEY · VERIFIABLE SIGNATURE"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Rejection reason"
+msgstr "Rejection reason"
+
+#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
+msgid "WhatsApp (via individual link)"
+msgstr "WhatsApp (via individual link)"
+
+#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
+msgid "Email (via individual link)"
+msgstr "Email (via individual link)"

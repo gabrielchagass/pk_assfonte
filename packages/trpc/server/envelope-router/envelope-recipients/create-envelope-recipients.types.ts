@@ -4,6 +4,7 @@ import {
   ZRecipientEmailSchema,
   ZRecipientSigningOrderSchema,
 } from '@documenso/lib/types/recipient';
+import { ZRecipientDeliverySchema } from '@documenso/lib/utils/recipient-delivery';
 import { RecipientRole } from '@prisma/client';
 import { z } from 'zod';
 
@@ -26,6 +27,8 @@ export const ZCreateEnvelopeRecipientSchema = z.object({
   signingOrder: ZRecipientSigningOrderSchema.optional(),
   accessAuth: z.array(ZRecipientAccessAuthTypesSchema).default([]).optional(),
   actionAuth: z.array(ZRecipientActionAuthTypesSchema).default([]).optional(),
+  // ProKey patch 0006: delivery channel and masked destination for the certificate.
+  delivery: ZRecipientDeliverySchema.optional(),
 });
 
 export const ZCreateEnvelopeRecipientsRequestSchema = z.object({
