@@ -4,6 +4,7 @@ import {
   ZRecipientLiteSchema,
   ZRecipientSigningOrderSchema,
 } from '@documenso/lib/types/recipient';
+import { ZRecipientDeliverySchema } from '@documenso/lib/utils/recipient-delivery';
 import { RecipientRole } from '@prisma/client';
 import { z } from 'zod';
 
@@ -27,6 +28,8 @@ export const ZUpdateEnvelopeRecipientSchema = z.object({
   signingOrder: ZRecipientSigningOrderSchema.optional(),
   accessAuth: z.array(ZRecipientAccessAuthTypesSchema).default([]).optional(),
   actionAuth: z.array(ZRecipientActionAuthTypesSchema).default([]).optional(),
+  // ProKey patch 0007: replaces the delivery of patch 0006; omitted, the stored one is kept.
+  delivery: ZRecipientDeliverySchema.optional(),
 });
 
 export const ZUpdateEnvelopeRecipientsRequestSchema = z.object({

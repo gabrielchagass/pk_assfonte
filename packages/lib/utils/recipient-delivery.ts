@@ -32,3 +32,13 @@ export const readRecipientDelivery = (authOptions: unknown): TRecipientDelivery 
 
   return parsed.success ? parsed.data : null;
 };
+
+/**
+ * ProKey patch 0007 (DOM-D095): delivery kept by a recipient update. A new
+ * delivery replaces the stored one; without it, the stored one is kept, since
+ * the update rebuilds the auth options and would otherwise drop it.
+ */
+export const resolveUpdatedRecipientDelivery = (
+  originalAuthOptions: unknown,
+  update?: TRecipientDelivery,
+): TRecipientDelivery | null => update ?? readRecipientDelivery(originalAuthOptions);

@@ -4,6 +4,7 @@ import { type TRecipientActionAuthTypes, ZRecipientAuthOptionsSchema } from '@do
 import type { ApiRequestMetadata } from '@documenso/lib/universal/extract-request-metadata';
 import { createDocumentAuditLogData, diffRecipientChanges } from '@documenso/lib/utils/document-audit-logs';
 import { createRecipientAuthOptions } from '@documenso/lib/utils/document-auth';
+import { resolveUpdatedRecipientDelivery, type TRecipientDelivery } from '@documenso/lib/utils/recipient-delivery';
 import { prisma } from '@documenso/prisma';
 import { EnvelopeType, RecipientRole, SendStatus, SigningStatus } from '@prisma/client';
 
@@ -29,6 +30,7 @@ export interface UpdateEnvelopeRecipientsOptions {
     signingOrder?: number | null;
     accessAuth?: TRecipientAccessAuthTypes[];
     actionAuth?: TRecipientActionAuthTypes[];
+    delivery?: TRecipientDelivery;
   }[];
   requestMetadata: ApiRequestMetadata;
 }
@@ -153,9 +155,15 @@ export const updateEnvelopeRecipients = async ({
           });
         }
 
+        // ProKey patch 0007: the auth options above are rebuilt from the
+        // upstream keys only; keep (or replace) the delivery of patch 0006.
+        const delivery = resolveUpdatedRecipientDelivery(originalRecipient.authOptions, updateData.delivery);
+
+        const { delivery: _delivery, ...recipientUpdate } = updateData;
+
         const mergedRecipient = {
           ...originalRecipient,
-          ...updateData,
+          ...recipientUpdate,
         };
 
         const updatedRecipient = await tx.recipient.update({
@@ -171,7 +179,8 @@ export const updateEnvelopeRecipients = async ({
             envelopeId: envelope.id,
             sendStatus: mergedRecipient.role === RecipientRole.CC ? SendStatus.SENT : SendStatus.NOT_SENT,
             signingStatus: mergedRecipient.role === RecipientRole.CC ? SigningStatus.SIGNED : SigningStatus.NOT_SIGNED,
-            authOptions,
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            authOptions: (delivery ? { ...authOptions, delivery } : authOptions) as typeof authOptions,
           },
           include: {
             fields: true,
