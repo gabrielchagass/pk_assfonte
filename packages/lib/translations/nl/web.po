@@ -336,10 +336,26 @@ msgstr "{0} heeft je uitgenodigd om het document \"{1}\" te {recipientActionVerb
 msgid "{0} has invited you to sign this document."
 msgstr ""
 
+#. placeholder {0}: result.fileName
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} has not been altered since the signatures were completed."
+msgstr ""
+
 #. placeholder {0}: team.name
 #: packages/lib/jobs/definitions/emails/send-signing-email.handler.ts
 msgid "{0} invited you to {recipientActionVerb} a document"
 msgstr "{0} heeft je uitgenodigd om een document te {recipientActionVerb}"
+
+#. placeholder {0}: result.fileName
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} matches the document before it was signed. The signed version is the one available for download on this page."
+msgstr ""
+
+#. placeholder {0}: verification.completed
+#. placeholder {1}: verification.total
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "{0} of {1}"
+msgstr ""
 
 #. placeholder {0}: remaining.documents
 #. placeholder {1}: quota.documents
@@ -358,6 +374,11 @@ msgstr ""
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl._index.tsx
 msgid "{0} Teams"
 msgstr "{0} teams"
+
+#. placeholder {0}: result.fileName
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} was altered or is a different document. Use the file available for download on this page."
+msgstr ""
 
 #. placeholder {0}: currentStepData.order
 #. placeholder {1}: envelopeEditorSteps.length
@@ -2963,6 +2984,10 @@ msgstr "Grafieken"
 msgid "Check your email"
 msgstr ""
 
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Check your file"
+msgstr ""
+
 #: apps/remix/app/components/dialogs/ai-field-detection-dialog.tsx
 #: apps/remix/app/components/general/envelope-editor/envelope-editor-fields-drag-drop.tsx
 #: packages/lib/utils/fields.ts
@@ -3003,6 +3028,10 @@ msgstr "Kies hieronder een bestaande ontvanger om verder te gaan"
 msgid "Choose Direct Link Recipient"
 msgstr "Directe‑linkontvanger kiezen"
 
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Choose file"
+msgstr ""
+
 #: apps/remix/app/components/general/document/document-edit-form.tsx
 msgid "Choose how the document will reach recipients"
 msgstr "Kies hoe het document de ontvangers bereikt"
@@ -3010,6 +3039,10 @@ msgstr "Kies hoe het document de ontvangers bereikt"
 #: apps/remix/app/components/embed/authoring/configure-document-advanced-settings.tsx
 msgid "Choose how to distribute your document to recipients. Email will send notifications, None will generate signing links for manual distribution."
 msgstr "Kies hoe je je document naar ontvangers distribueert. E-mail verstuurt meldingen, Geen genereert ondertekeningslinks voor handmatige distributie."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Choose the PDF you received to compare it with this document. The file is checked in your browser and is not uploaded."
+msgstr ""
 
 #: apps/remix/app/components/general/document-signing/access-auth-2fa-form.tsx
 msgid "Choose verification method"
@@ -3986,6 +4019,14 @@ msgstr ""
 #: apps/remix/app/components/general/envelope-editor/envelope-editor-fields-page.tsx
 msgid "Date Settings"
 msgstr "Datuminstellingen"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Dates and times in {zone}."
+msgstr ""
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Dates and times in {zone}. Timestamp by {tsa} (RFC 3161)."
+msgstr ""
 
 #: apps/remix/app/components/dialogs/ai-field-detection-dialog.tsx
 msgid "David is the Employee, Lucas is the Manager"
@@ -5367,9 +5408,7 @@ msgstr "Kennisgeving elektronische handtekening"
 #: apps/remix/app/routes/_authenticated+/admin+/users.$id.tsx
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.email-domains.$id.tsx
 #: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
-#: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
 #: packages/lib/constants/document.ts
-#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
 #: packages/lib/server-only/pdf/generate-certificate-pdf.ts
 #: packages/lib/utils/fields.ts
 #: packages/lib/utils/settings-nav.ts
@@ -5384,6 +5423,10 @@ msgstr "Kennisgeving elektronische handtekening"
 #: packages/ui/primitives/template-flow/add-template-placeholder-recipients.tsx
 msgid "Email"
 msgstr "E‑mail"
+
+#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
+msgid "Email (via individual link)"
+msgstr ""
 
 #: apps/remix/app/components/dialogs/organisation-member-invite-dialog.tsx
 #: apps/remix/app/components/forms/send-confirmation-email.tsx
@@ -5844,6 +5887,7 @@ msgstr "Envelope gedistribueerd"
 #: packages/lib/server-only/pdf/render-audit-logs.ts
 #: packages/lib/server-only/pdf/render-audit-logs.ts
 #: packages/lib/server-only/pdf/render-audit-logs.ts
+#: packages/lib/server-only/pdf/render-certificate.ts
 #: packages/lib/server-only/pdf/render-certificate.ts
 #: packages/lib/server-only/pdf/render-certificate.ts
 msgid "Envelope ID"
@@ -6758,6 +6802,10 @@ msgstr "Host"
 msgid "How long recipients have to complete this document after it is sent. Uses the team default when set to inherit."
 msgstr "Hoe lang ontvangers de tijd hebben om dit document te voltooien nadat het is verzonden. Gebruikt de standaardinstelling van het team wanneer overnemen is geselecteerd."
 
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "How to check this document"
+msgstr ""
+
 #: apps/remix/app/components/forms/signin.tsx
 #: apps/remix/app/components/forms/signup.tsx
 #: apps/remix/app/components/general/claim-account.tsx
@@ -7001,6 +7049,11 @@ msgstr "Ingevoegd"
 #: apps/remix/app/routes/_authenticated+/admin+/stats.tsx
 msgid "Instance Stats"
 msgstr "Instantiestatistieken"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Integrity and authenticity verification"
+msgstr ""
 
 #: apps/remix/app/components/forms/2fa/view-recovery-codes-dialog.tsx
 msgid "Invalid code. Please try again."
@@ -9404,6 +9457,10 @@ msgstr "Profiel bijgewerkt"
 msgid "Progress"
 msgstr "Voortgang"
 
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "PROKEY · VERIFIABLE SIGNATURE"
+msgstr ""
+
 #: apps/remix/app/routes/_authenticated+/settings+/security.linked-accounts.tsx
 msgid "Provider"
 msgstr "Provider"
@@ -9435,6 +9492,10 @@ msgstr "Publieke sjabloon"
 #: apps/remix/app/components/tables/templates-table.tsx
 msgid "Public templates are connected to your public profile. Any modifications to public templates will also appear in your public profile."
 msgstr "Openbare sjablonen zijn gekoppeld aan je openbare profiel. Alle wijzigingen aan openbare sjablonen worden ook zichtbaar in je openbare profiel."
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Public verification URL"
+msgstr ""
 
 #: apps/remix/app/components/general/settings-upsell/branding-upsell.tsx
 msgid "Put your own brand on every document you send. Branding is available on the Teams plan and above."
@@ -9827,6 +9888,10 @@ msgstr "Geweigerd"
 #: packages/email/template-components/template-document-rejection-confirmed.tsx
 msgid "Rejection Confirmed"
 msgstr "Weigering bevestigd"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Rejection reason"
+msgstr ""
 
 #: packages/email/template-components/template-document-rejection-confirmed.tsx
 msgid "Rejection reason: {reason}"
@@ -10875,6 +10940,15 @@ msgstr "Instellingen"
 msgid "Setup"
 msgstr "Instellen"
 
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "SHA-256 of the original file"
+msgstr ""
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "SHA-256 of the signed file"
+msgstr ""
+
 #: apps/remix/app/components/general/document/document-page-view-dropdown.tsx
 #: apps/remix/app/components/tables/documents-table-action-dropdown.tsx
 #: packages/ui/components/document/document-share-button.tsx
@@ -11135,6 +11209,16 @@ msgstr "Handtekeningtypen"
 msgid "Signatures Collected"
 msgstr "Verzamelde handtekeningen"
 
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Signatures completed"
+msgstr ""
+
+#. placeholder {0}: verification.completed
+#. placeholder {1}: verification.total
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Signatures completed: {0} of {1}"
+msgstr ""
+
 #: apps/remix/app/components/general/document/document-page-view-recipients.tsx
 #: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
 #: packages/lib/server-only/pdf/render-certificate.ts
@@ -11192,6 +11276,7 @@ msgstr "Het ondertekeningsalgoritme wordt niet ondersteund"
 
 #: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
 #: packages/lib/server-only/pdf/render-certificate.ts
+#: packages/lib/server-only/pdf/render-certificate.ts
 msgid "Signing Certificate"
 msgstr "Ondertekeningscertificaat"
 
@@ -11200,6 +11285,7 @@ msgid "Signing certificate is invalid"
 msgstr "Het ondertekeningscertificaat is ongeldig"
 
 #: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
+#: packages/lib/server-only/pdf/render-certificate.ts
 #: packages/lib/server-only/pdf/render-certificate.ts
 msgid "Signing certificate provided by"
 msgstr "Ondertekeningscertificaat verstrekt door"
@@ -11225,6 +11311,11 @@ msgstr "Ondertekenen voor"
 #: apps/remix/app/components/forms/signin.tsx
 msgid "Signing in..."
 msgstr "Bezig met inloggen..."
+
+#: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
+#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
+msgid "Signing link"
+msgstr ""
 
 #: apps/remix/app/utils/toast-error-messages.ts
 msgid "Signing link expired"
@@ -12345,6 +12436,19 @@ msgstr "De gebeurtenissen die een webhook naar je URL laten sturen."
 msgid "The fields have been updated to the new field insertion method successfully"
 msgstr "De velden zijn succesvol bijgewerkt naar de nieuwe methode voor veldinvoeging"
 
+#. placeholder {0}: result.fileName
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file {0} could not be read."
+msgstr ""
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file does not match this document"
+msgstr ""
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file is identical to the signed document"
+msgstr ""
+
 #: apps/remix/app/components/dialogs/envelope-item-edit-dialog.tsx
 #: apps/remix/app/utils/toast-error-messages.ts
 msgid "The file is not a valid PDF or is password protected."
@@ -12731,6 +12835,10 @@ msgstr "Dit kan een of twee minuten duren, afhankelijk van de grootte van uw doc
 msgid "This claim is locked and cannot be deleted."
 msgstr "Deze claim is vergrendeld en kan niet worden verwijderd."
 
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "This copy carries the audit data, but a printed or copied version can be altered. To check that the file is intact and that the signatures are valid, open the public verification URL or scan the QR code and compare your file on that page."
+msgstr ""
+
 #: apps/remix/app/components/general/analytics/analytics-query-error.tsx
 msgid "This data could not be loaded."
 msgstr ""
@@ -12931,6 +13039,10 @@ msgstr "Op deze manier bereikt het document de ontvangers zodra het klaar is om 
 #: apps/remix/app/routes/_authenticated+/admin+/organisations.$id.tsx
 msgid "This is the claim that this organisation was initially created with. Any feature flag changes to this claim will be backported into this organisation."
 msgstr "Dit is de claim waarmee deze organisatie oorspronkelijk is aangemaakt. Eventuele wijzigingen in feature-flags van deze claim worden teruggezet in deze organisatie."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "This is the original file, without the signatures"
+msgstr ""
 
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.sso.tsx
 msgid "This is the required scopes you must set in your provider's settings"
@@ -14888,6 +15000,10 @@ msgstr "Probeerde je dit document in plaats daarvan te bewerken?"
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl._index.tsx
 msgid "What you can do with teams:"
 msgstr "Wat je met teams kunt doen:"
+
+#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
+msgid "WhatsApp (via individual link)"
+msgstr ""
 
 #: apps/remix/app/components/embed/authoring/configure-document-recipients.tsx
 #: apps/remix/app/components/general/envelope-editor/envelope-editor-recipient-form.tsx

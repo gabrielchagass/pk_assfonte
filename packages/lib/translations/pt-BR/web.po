@@ -331,10 +331,26 @@ msgstr "{0} convidou você para {recipientActionVerb} o documento \"{1}\"."
 msgid "{0} has invited you to sign this document."
 msgstr ""
 
+#. placeholder {0}: result.fileName
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} has not been altered since the signatures were completed."
+msgstr "{0} não foi alterado desde a conclusão das assinaturas."
+
 #. placeholder {0}: team.name
 #: packages/lib/jobs/definitions/emails/send-signing-email.handler.ts
 msgid "{0} invited you to {recipientActionVerb} a document"
 msgstr "{0} convidou você para {recipientActionVerb} um documento"
+
+#. placeholder {0}: result.fileName
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} matches the document before it was signed. The signed version is the one available for download on this page."
+msgstr "{0} corresponde ao documento antes das assinaturas. A versão assinada é a que está disponível para baixar nesta página."
+
+#. placeholder {0}: verification.completed
+#. placeholder {1}: verification.total
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "{0} of {1}"
+msgstr "{0} de {1}"
 
 #. placeholder {0}: remaining.documents
 #. placeholder {1}: quota.documents
@@ -353,6 +369,11 @@ msgstr ""
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl._index.tsx
 msgid "{0} Teams"
 msgstr "{0} Equipes"
+
+#. placeholder {0}: result.fileName
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "{0} was altered or is a different document. Use the file available for download on this page."
+msgstr "{0} foi alterado ou é outro documento. Use o arquivo disponível para baixar nesta página."
 
 #. placeholder {0}: currentStepData.order
 #. placeholder {1}: envelopeEditorSteps.length
@@ -2958,6 +2979,10 @@ msgstr "Gráficos"
 msgid "Check your email"
 msgstr ""
 
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Check your file"
+msgstr "Confira o seu arquivo"
+
 #: apps/remix/app/components/dialogs/ai-field-detection-dialog.tsx
 #: apps/remix/app/components/general/envelope-editor/envelope-editor-fields-drag-drop.tsx
 #: packages/lib/utils/fields.ts
@@ -2998,6 +3023,10 @@ msgstr "Escolha um destinatário existente abaixo para continuar"
 msgid "Choose Direct Link Recipient"
 msgstr "Escolher Destinatário do Link Direto"
 
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Choose file"
+msgstr "Escolher arquivo"
+
 #: apps/remix/app/components/general/document/document-edit-form.tsx
 msgid "Choose how the document will reach recipients"
 msgstr "Escolha como o documento chegará aos destinatários"
@@ -3005,6 +3034,10 @@ msgstr "Escolha como o documento chegará aos destinatários"
 #: apps/remix/app/components/embed/authoring/configure-document-advanced-settings.tsx
 msgid "Choose how to distribute your document to recipients. Email will send notifications, None will generate signing links for manual distribution."
 msgstr "Escolha como distribuir seu documento aos destinatários. E-mail enviará notificações, Nenhum gerará links de assinatura para distribuição manual."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Choose the PDF you received to compare it with this document. The file is checked in your browser and is not uploaded."
+msgstr "Escolha o PDF que você recebeu para compará-lo com este documento. A conferência é feita no seu navegador e o arquivo não é enviado."
 
 #: apps/remix/app/components/general/document-signing/access-auth-2fa-form.tsx
 msgid "Choose verification method"
@@ -3981,6 +4014,14 @@ msgstr ""
 #: apps/remix/app/components/general/envelope-editor/envelope-editor-fields-page.tsx
 msgid "Date Settings"
 msgstr "Configurações de Data"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Dates and times in {zone}."
+msgstr "Datas e horários em {zone}."
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Dates and times in {zone}. Timestamp by {tsa} (RFC 3161)."
+msgstr "Datas e horários em {zone}. Carimbo do tempo por {tsa} (RFC 3161)."
 
 #: apps/remix/app/components/dialogs/ai-field-detection-dialog.tsx
 msgid "David is the Employee, Lucas is the Manager"
@@ -5362,9 +5403,7 @@ msgstr "Divulgação de Assinatura Eletrônica"
 #: apps/remix/app/routes/_authenticated+/admin+/users.$id.tsx
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.email-domains.$id.tsx
 #: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
-#: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
 #: packages/lib/constants/document.ts
-#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
 #: packages/lib/server-only/pdf/generate-certificate-pdf.ts
 #: packages/lib/utils/fields.ts
 #: packages/lib/utils/settings-nav.ts
@@ -5379,6 +5418,10 @@ msgstr "Divulgação de Assinatura Eletrônica"
 #: packages/ui/primitives/template-flow/add-template-placeholder-recipients.tsx
 msgid "Email"
 msgstr "E-mail"
+
+#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
+msgid "Email (via individual link)"
+msgstr "E-mail (através de link individual)"
 
 #: apps/remix/app/components/dialogs/organisation-member-invite-dialog.tsx
 #: apps/remix/app/components/forms/send-confirmation-email.tsx
@@ -5839,6 +5882,7 @@ msgstr "Envelope distribuído"
 #: packages/lib/server-only/pdf/render-audit-logs.ts
 #: packages/lib/server-only/pdf/render-audit-logs.ts
 #: packages/lib/server-only/pdf/render-audit-logs.ts
+#: packages/lib/server-only/pdf/render-certificate.ts
 #: packages/lib/server-only/pdf/render-certificate.ts
 #: packages/lib/server-only/pdf/render-certificate.ts
 msgid "Envelope ID"
@@ -6753,6 +6797,10 @@ msgstr ""
 msgid "How long recipients have to complete this document after it is sent. Uses the team default when set to inherit."
 msgstr ""
 
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "How to check this document"
+msgstr "Como conferir este documento"
+
 #: apps/remix/app/components/forms/signin.tsx
 #: apps/remix/app/components/forms/signup.tsx
 #: apps/remix/app/components/general/claim-account.tsx
@@ -6996,6 +7044,11 @@ msgstr "Inserido"
 #: apps/remix/app/routes/_authenticated+/admin+/stats.tsx
 msgid "Instance Stats"
 msgstr "Estatísticas da Instância"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Integrity and authenticity verification"
+msgstr "Verificação de integridade e autenticidade"
 
 #: apps/remix/app/components/forms/2fa/view-recovery-codes-dialog.tsx
 msgid "Invalid code. Please try again."
@@ -9399,6 +9452,10 @@ msgstr "Perfil atualizado"
 msgid "Progress"
 msgstr "Progresso"
 
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "PROKEY · VERIFIABLE SIGNATURE"
+msgstr "PROKEY · ASSINATURA VERIFICÁVEL"
+
 #: apps/remix/app/routes/_authenticated+/settings+/security.linked-accounts.tsx
 msgid "Provider"
 msgstr "Provedor"
@@ -9430,6 +9487,10 @@ msgstr "Modelo Público"
 #: apps/remix/app/components/tables/templates-table.tsx
 msgid "Public templates are connected to your public profile. Any modifications to public templates will also appear in your public profile."
 msgstr "Modelos públicos estão conectados ao seu perfil público. Quaisquer modificações em modelos públicos também aparecerão no seu perfil público."
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Public verification URL"
+msgstr "URL pública de verificação"
 
 #: apps/remix/app/components/general/settings-upsell/branding-upsell.tsx
 msgid "Put your own brand on every document you send. Branding is available on the Teams plan and above."
@@ -9822,6 +9883,10 @@ msgstr "Rejeitado"
 #: packages/email/template-components/template-document-rejection-confirmed.tsx
 msgid "Rejection Confirmed"
 msgstr "Rejeição Confirmada"
+
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Rejection reason"
+msgstr "Motivo da recusa"
 
 #: packages/email/template-components/template-document-rejection-confirmed.tsx
 msgid "Rejection reason: {reason}"
@@ -10870,6 +10935,15 @@ msgstr "Configurações"
 msgid "Setup"
 msgstr "Configurar"
 
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "SHA-256 of the original file"
+msgstr "SHA-256 do arquivo original"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "SHA-256 of the signed file"
+msgstr "SHA-256 do arquivo assinado"
+
 #: apps/remix/app/components/general/document/document-page-view-dropdown.tsx
 #: apps/remix/app/components/tables/documents-table-action-dropdown.tsx
 #: packages/ui/components/document/document-share-button.tsx
@@ -11130,6 +11204,16 @@ msgstr "Tipos de assinatura"
 msgid "Signatures Collected"
 msgstr "Assinaturas Coletadas"
 
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "Signatures completed"
+msgstr "Assinaturas concluídas"
+
+#. placeholder {0}: verification.completed
+#. placeholder {1}: verification.total
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "Signatures completed: {0} of {1}"
+msgstr "Assinaturas concluídas: {0} de {1}"
+
 #: apps/remix/app/components/general/document/document-page-view-recipients.tsx
 #: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
 #: packages/lib/server-only/pdf/render-certificate.ts
@@ -11187,6 +11271,7 @@ msgstr ""
 
 #: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
 #: packages/lib/server-only/pdf/render-certificate.ts
+#: packages/lib/server-only/pdf/render-certificate.ts
 msgid "Signing Certificate"
 msgstr "Certificado de Assinatura"
 
@@ -11195,6 +11280,7 @@ msgid "Signing certificate is invalid"
 msgstr ""
 
 #: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
+#: packages/lib/server-only/pdf/render-certificate.ts
 #: packages/lib/server-only/pdf/render-certificate.ts
 msgid "Signing certificate provided by"
 msgstr "Certificado de assinatura fornecido por"
@@ -11220,6 +11306,11 @@ msgstr "Assinando para"
 #: apps/remix/app/components/forms/signin.tsx
 msgid "Signing in..."
 msgstr "Entrando..."
+
+#: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
+#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
+msgid "Signing link"
+msgstr "Link de assinatura"
 
 #: apps/remix/app/utils/toast-error-messages.ts
 msgid "Signing link expired"
@@ -12340,6 +12431,19 @@ msgstr "Os eventos que acionarão o envio de um webhook para sua URL."
 msgid "The fields have been updated to the new field insertion method successfully"
 msgstr "Os campos foram atualizados para o novo método de inserção de campo com sucesso"
 
+#. placeholder {0}: result.fileName
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file {0} could not be read."
+msgstr "Não foi possível ler o arquivo {0}."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file does not match this document"
+msgstr "O arquivo não corresponde a este documento"
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "The file is identical to the signed document"
+msgstr "O arquivo é idêntico ao documento assinado"
+
 #: apps/remix/app/components/dialogs/envelope-item-edit-dialog.tsx
 #: apps/remix/app/utils/toast-error-messages.ts
 msgid "The file is not a valid PDF or is password protected."
@@ -12726,6 +12830,10 @@ msgstr "Isso pode levar um ou dois minutos, dependendo do tamanho do seu documen
 msgid "This claim is locked and cannot be deleted."
 msgstr "Esta reivindicação está bloqueada e não pode ser excluída."
 
+#: packages/lib/server-only/pdf/render-certificate.ts
+msgid "This copy carries the audit data, but a printed or copied version can be altered. To check that the file is intact and that the signatures are valid, open the public verification URL or scan the QR code and compare your file on that page."
+msgstr "Esta via traz os dados de auditoria, mas uma versão impressa ou copiada pode ser alterada. Para conferir se o arquivo está íntegro e se as assinaturas são válidas, abra a URL pública de verificação ou leia o QR code e compare o seu arquivo nessa página."
+
 #: apps/remix/app/components/general/analytics/analytics-query-error.tsx
 msgid "This data could not be loaded."
 msgstr ""
@@ -12926,6 +13034,10 @@ msgstr "É assim que o documento chegará aos destinatários quando estiver pron
 #: apps/remix/app/routes/_authenticated+/admin+/organisations.$id.tsx
 msgid "This is the claim that this organisation was initially created with. Any feature flag changes to this claim will be backported into this organisation."
 msgstr "Esta é a reivindicação com a qual esta organização foi criada inicialmente. Quaisquer alterações de sinalizador de recurso nesta reivindicação serão transferidas para esta organização."
+
+#: apps/remix/app/components/general/document/document-verification-panel.tsx
+msgid "This is the original file, without the signatures"
+msgstr "Este é o arquivo original, sem as assinaturas"
 
 #: apps/remix/app/routes/_authenticated+/o.$orgUrl.settings.sso.tsx
 msgid "This is the required scopes you must set in your provider's settings"
@@ -14884,6 +14996,10 @@ msgstr "Você estava tentando editar este documento?"
 msgid "What you can do with teams:"
 msgstr "O que você pode fazer com equipes:"
 
+#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
+msgid "WhatsApp (via individual link)"
+msgstr "WhatsApp (através de link individual)"
+
 #: apps/remix/app/components/embed/authoring/configure-document-recipients.tsx
 #: apps/remix/app/components/general/envelope-editor/envelope-editor-recipient-form.tsx
 #: packages/ui/primitives/document-flow/add-signers.tsx
@@ -16255,110 +16371,3 @@ msgstr ""
 #: packages/ui/primitives/signature-pad/signature-pad-upload.tsx
 msgid "Zoom out"
 msgstr ""
-
-#: apps/remix/app/routes/_internal+/[__htmltopdf]+/certificate.tsx
-#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
-msgid "Signing link"
-msgstr "Link de assinatura"
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-#: packages/lib/server-only/pdf/render-certificate.ts
-msgid "Integrity and authenticity verification"
-msgstr "Verificação de integridade e autenticidade"
-
-#: packages/lib/server-only/pdf/render-certificate.ts
-msgid "Public verification URL"
-msgstr "URL pública de verificação"
-
-#: packages/lib/server-only/pdf/render-certificate.ts
-msgid "Signatures completed"
-msgstr "Assinaturas concluídas"
-
-#: packages/lib/server-only/pdf/render-certificate.ts
-msgid "{0} of {1}"
-msgstr "{0} de {1}"
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-#: packages/lib/server-only/pdf/render-certificate.ts
-msgid "SHA-256 of the original file"
-msgstr "SHA-256 do arquivo original"
-
-#: packages/lib/server-only/pdf/render-certificate.ts
-msgid "How to check this document"
-msgstr "Como conferir este documento"
-
-#: packages/lib/server-only/pdf/render-certificate.ts
-msgid "This copy carries the audit data, but a printed or copied version can be altered. To check that the file is intact and that the signatures are valid, open the public verification URL or scan the QR code and compare your file on that page."
-msgstr "Esta via traz os dados de auditoria, mas uma versão impressa ou copiada pode ser alterada. Para conferir se o arquivo está íntegro e se as assinaturas são válidas, abra a URL pública de verificação ou leia o QR code e compare o seu arquivo nessa página."
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "SHA-256 of the signed file"
-msgstr "SHA-256 do arquivo assinado"
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "Signatures completed: {0} of {1}"
-msgstr "Assinaturas concluídas: {0} de {1}"
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "Check your file"
-msgstr "Confira o seu arquivo"
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "Choose the PDF you received to compare it with this document. The file is checked in your browser and is not uploaded."
-msgstr "Escolha o PDF que você recebeu para compará-lo com este documento. A conferência é feita no seu navegador e o arquivo não é enviado."
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "The file is identical to the signed document"
-msgstr "O arquivo é idêntico ao documento assinado"
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "{0} has not been altered since the signatures were completed."
-msgstr "{0} não foi alterado desde a conclusão das assinaturas."
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "This is the original file, without the signatures"
-msgstr "Este é o arquivo original, sem as assinaturas"
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "{0} matches the document before it was signed. The signed version is the one available for download on this page."
-msgstr "{0} corresponde ao documento antes das assinaturas. A versão assinada é a que está disponível para baixar nesta página."
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "The file does not match this document"
-msgstr "O arquivo não corresponde a este documento"
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "{0} was altered or is a different document. Use the file available for download on this page."
-msgstr "{0} foi alterado ou é outro documento. Use o arquivo disponível para baixar nesta página."
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "The file {0} could not be read."
-msgstr "Não foi possível ler o arquivo {0}."
-
-#: apps/remix/app/components/general/document/document-verification-panel.tsx
-msgid "Choose file"
-msgstr "Escolher arquivo"
-
-#: packages/lib/server-only/pdf/render-certificate.ts
-msgid "Dates and times in {zone}. Timestamp by {tsa} (RFC 3161)."
-msgstr "Datas e horários em {zone}. Carimbo do tempo por {tsa} (RFC 3161)."
-
-#: packages/lib/server-only/pdf/render-certificate.ts
-msgid "Dates and times in {zone}."
-msgstr "Datas e horários em {zone}."
-
-#: packages/lib/server-only/pdf/render-certificate.ts
-msgid "PROKEY · VERIFIABLE SIGNATURE"
-msgstr "PROKEY · ASSINATURA VERIFICÁVEL"
-
-#: packages/lib/server-only/pdf/render-certificate.ts
-msgid "Rejection reason"
-msgstr "Motivo da recusa"
-
-#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
-msgid "WhatsApp (via individual link)"
-msgstr "WhatsApp (através de link individual)"
-
-#: packages/lib/server-only/pdf/generate-certificate-pdf.ts
-msgid "Email (via individual link)"
-msgstr "E-mail (através de link individual)"
